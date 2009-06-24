@@ -9,28 +9,31 @@ import static java.util.Arrays.*;
 
 /**
  * Assume that TreeTagger is installed and available in the path.
- * 
+ *
  * @author Richard Eckart
  */
-public 
-class DefaultExecutableResolver 
-implements ExecutableResolver 
+public
+class DefaultExecutableResolver
+implements ExecutableResolver
 {
 	PlatformDetector _platform;
-	
-	public 
-	void destroy() 
+
+	public
+	void destroy()
 	{
 		// Do nothing
 	}
 
-	public 
+	public
 	String getExecutable()
-	throws IOException 
+	throws IOException
 	{
 		List<String> paths = new ArrayList<String>();
 		if (System.getProperty("treetagger.home") != null) {
 			paths.add(System.getProperty("treetagger.home")+"/bin");
+		}
+		if (System.getenv("TAGDIR") != null) {
+			paths.add(System.getenv("TAGDIR")+"/bin");
 		}
 		if (System.getenv("TREETAGGER_HOME") != null) {
 			paths.add(System.getenv("TREETAGGER_HOME")+"/bin");
@@ -44,7 +47,7 @@ implements ExecutableResolver
 			if (p == null) {
 				continue;
 			}
-			
+
 			File exe = new File(p+"/"+"tree-tagger"+_platform.getExecutableSuffix());
 			if (exe.exists()) {
 				return exe.getAbsolutePath();
@@ -54,9 +57,9 @@ implements ExecutableResolver
 		throw new IOException("Unable to locate tree-tagger binary");
 	}
 
-	public 
+	public
 	void setPlatformDetector(
-			PlatformDetector aPlatform) 
+			PlatformDetector aPlatform)
 	{
 		_platform = aPlatform;
 	}
