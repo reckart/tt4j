@@ -16,12 +16,21 @@ public
 class DefaultExecutableResolver
 implements ExecutableResolver
 {
-	PlatformDetector _platform;
+	protected PlatformDetector _platform;
+	protected List<String> _additionalPaths = new ArrayList<String>();
 
 	public
 	void destroy()
 	{
 		// Do nothing
+	}
+
+	public
+	void setAdditionalPaths(
+			List<String> aAdditionalPaths)
+	{
+		_additionalPaths.clear();
+		_additionalPaths.addAll(aAdditionalPaths);
 	}
 
 	public
@@ -42,6 +51,7 @@ implements ExecutableResolver
 		if (path != null) {
 			paths.addAll(asList(path.split(File.pathSeparator)));
 		}
+		paths.addAll(_additionalPaths);
 
 		for (String p : paths) {
 			if (p == null) {

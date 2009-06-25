@@ -13,55 +13,55 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
-public 
+public
 class TreeTaggerWrapper<O>
 {
     private final static Pattern RE_TAB			= Pattern.compile("[\\t]");
     private final static Pattern RE_WHITESPACE	= Pattern.compile("[\\p{Zs}\\p{C}]");
-	
+
     // A tag to identify begin/end of a text in the data flow.
     // (avoid to restart TreeTagger process each time)
     private static final String STARTOFTEXT = "<This-is-the-start-of-the-text />";
     private static final String ENDOFTEXT = "<This-is-the-end-of-the-text />";
-	
+
 	public final static String PARAM_MODEL = "model";
-	
+
 	private Model _model = null;
-	
+
 	private Process _proc = null;
 	private String  _procCmd = null;
-	
+
 	private TokenHandler<O> _handler = null;
 	private TokenAdapter<O> _adapter = null;
 	private PlatformDetector _platform = null;
 	private ModelResolver _modelProvider = null;
 	private ExecutableResolver _exeProvider = null;
-	
+
 	{
 		_modelProvider = new DefaultModelResolver();
 		_exeProvider = new DefaultExecutableResolver();
 		setPlatformDetector(new PlatformDetector());
 	}
-	
-	public 
+
+	public
 	void setModelProvider(
-			ModelResolver aModelProvider) 
+			ModelResolver aModelProvider)
 	{
 		_modelProvider = aModelProvider;
 		_modelProvider.setPlatformDetector(_platform);
 	}
-	
-	public 
+
+	public
 	void setExecutableProvider(
-			ExecutableResolver aExeProvider) 
+			ExecutableResolver aExeProvider)
 	{
 		_exeProvider = aExeProvider;
 		_exeProvider.setPlatformDetector(_platform);
 	}
-	
-	public 
+
+	public
 	void setHandler(
-			TokenHandler<O> aHandler) 
+			TokenHandler<O> aHandler)
 	{
 		_handler = aHandler;
 	}
@@ -73,9 +73,9 @@ class TreeTaggerWrapper<O>
 		_adapter = aAdapter;
 	}
 
-	public 
+	public
 	void setPlatformDetector(
-			PlatformDetector aPlatform) 
+			PlatformDetector aPlatform)
 	{
 		_platform = aPlatform;
 		if (_modelProvider != null) {
@@ -86,30 +86,36 @@ class TreeTaggerWrapper<O>
 		}
 	}
 
+	public
+	PlatformDetector getPlatformDetector()
+	{
+		return _platform;
+	}
+
     /**
 	 * Load the model with the given name.
-	 * 
+	 *
 	 * @param modelName the name of the model.
 	 * @return the model.
 	 * @throws IOException if the model can not be found.
 	 */
-	public 
+	public
 	void setModel(
-			String modelName) 
+			String modelName)
 	throws IOException
 	{
 		// If this model is already set, do nothing.
 		if (_model != null && _model.getName().equals(modelName)) {
 			return;
 		}
-		
+
 		stopTaggerProcess();
-		
+
 		// If the previous model was temporary, we have to clean it up
 		if (_model != null) {
 			_model.destroy();
 		}
-		
+
 		if (modelName != null) {
 			_model = _modelProvider.getModel(modelName);
 		}
@@ -117,14 +123,14 @@ class TreeTaggerWrapper<O>
 			_model = null;
 		}
 	}
-	
-	public 
-	Model getModel() 
+
+	public
+	Model getModel()
 	{
 		return _model;
 	}
-	
-	public 
+
+	public
 	void destroy()
 	{
 		// Clear the model resources
@@ -134,29 +140,29 @@ class TreeTaggerWrapper<O>
 		catch (IOException e) {
 			// Ignore
 		}
-		
+
 		// Clear the executable
     	if (_exeProvider != null) {
     		_exeProvider.destroy();
     	}
 	}
-	
+
 	@Override
-	protected 
-	void finalize() 
-	throws Throwable 
+	protected
+	void finalize()
+	throws Throwable
 	{
 		destroy();
 		super.finalize();
 	}
 
-	public 
+	public
 	void process(
-			Collection<O> aTokens) 
+			Collection<O> aTokens)
 	throws IOException
 	{
 		Process taggerProc = getTaggerProcess();
-	
+
     	Thread writer = new Thread(new Writer(aTokens.iterator()));
 
     	writer.start();
@@ -170,7 +176,7 @@ class TreeTaggerWrapper<O>
 		while (true) {
 			s = in.readLine();
     		System.out.println("<-- "+s);
-			
+
 			if (s == null) {
 				throw new IOException(
 						"TreeTagger has died. Make sure the following " +
@@ -178,7 +184,7 @@ class TreeTaggerWrapper<O>
 						"it from the command line: [echo \"test\" | " +
 						_procCmd+"]");
 			}
-			
+
 			s = s.trim();
 
 			if (STARTOFTEXT.equals(s)) {
@@ -200,49 +206,49 @@ class TreeTaggerWrapper<O>
 				// Get original token segment
 				if (_handler != null) {
 					_handler.token(
-							tokenIterator.next(), 
-							fields[0].trim().intern(), 
+							tokenIterator.next(),
+							fields[0].trim().intern(),
 							fields[1].trim());
 				}
 			}
 		}
-		
+
 		try {
 			writer.join();
 		}
 		catch (InterruptedException e) {
 			// Ignore
 		}
-		
+
 //		info("Parsed " + count + " pos segments");
 	}
-	
+
 	/**
      * Start tagger process.
-     * 
+     *
      * @return
      * @throws IOException
      */
     private
-    Process getTaggerProcess() 
+    Process getTaggerProcess()
     throws IOException
-    {    		
+    {
     	if (_proc == null) {
         	_model.install();
-        	
+
 			// fetch output from pos tagger
 			// fill output into annotation
-			String commands[] = { 
+			String commands[] = {
 					_exeProvider.getExecutable(),
-					"-quiet", 
+					"-quiet",
 					"-no-unknown",
 					"-sgml",
-					"-token", 
-					"-lemma", 
+					"-token",
+					"-lemma",
 					_model.getFile().getAbsolutePath() };
-	
+
 			_procCmd = join(commands, " ");
-			
+
 //			info("Starting treetagger: " + _procCmd);
 			_proc = Runtime.getRuntime().exec(commands);
     	} else {
@@ -254,7 +260,7 @@ class TreeTaggerWrapper<O>
     /**
      * Kill tagger process.
      */
-    private 
+    private
     void stopTaggerProcess()
     {
     	if (_proc != null) {
@@ -276,29 +282,29 @@ class TreeTaggerWrapper<O>
 			return _adapter.getText(o);
 		}
 	}
-	
+
 	private
     class Writer
     implements Runnable
     {
 		private final Iterator<O> tokenIterator;
-		
+
 		private Exception _exception;
 		private PrintWriter _pw;
-		
-    	public 
+
+    	public
     	Writer(
     			Iterator<O> aTokenIterator)
 		{
     		tokenIterator = aTokenIterator;
 		}
-    	
-    	public 
+
+    	public
     	void run()
     	{
     		try {
     			OutputStream os = _proc.getOutputStream();
-    			
+
     			_pw = new PrintWriter(new BufferedWriter(
     			    new OutputStreamWriter(os, _model.getEncoding())));
 
@@ -307,15 +313,15 @@ class TreeTaggerWrapper<O>
     			while (tokenIterator.hasNext()) {
     				send(getText(tokenIterator.next()));
     			}
-				
+
     			send(ENDOFTEXT);
 				send("\n.\n"+_model.getFlushSequence()+"\n\n");
-    		} 
+    		}
     		catch (Exception e) {
     			_exception = e;
     		}
     	}
-    	
+
     	private
     	void send(
     			String line)
@@ -324,11 +330,11 @@ class TreeTaggerWrapper<O>
     		System.out.println("--> "+line);
     		_pw.flush();
     	}
-    	
-    	public 
+
+    	public
     	Exception getException()
 		{
 			return _exception;
 		}
-    }    
+    }
 }
