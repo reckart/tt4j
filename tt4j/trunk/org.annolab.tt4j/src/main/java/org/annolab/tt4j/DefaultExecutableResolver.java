@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Arrays.*;
+import static java.io.File.separator;
 
 /**
  * Assume that TreeTagger is installed and available in the path.
@@ -39,13 +40,13 @@ implements ExecutableResolver
 	{
 		List<String> paths = new ArrayList<String>();
 		if (System.getProperty("treetagger.home") != null) {
-			paths.add(System.getProperty("treetagger.home")+"/bin");
+			paths.add(System.getProperty("treetagger.home")+separator+"bin");
 		}
 		if (System.getenv("TAGDIR") != null) {
-			paths.add(System.getenv("TAGDIR")+"/bin");
+			paths.add(System.getenv("TAGDIR")+separator+"bin");
 		}
 		if (System.getenv("TREETAGGER_HOME") != null) {
-			paths.add(System.getenv("TREETAGGER_HOME")+"/bin");
+			paths.add(System.getenv("TREETAGGER_HOME")+separator+"bin");
 		}
 		String path = System.getenv("PATH");
 		if (path != null) {
@@ -58,7 +59,7 @@ implements ExecutableResolver
 				continue;
 			}
 
-			File exe = new File(p+"/"+"tree-tagger"+_platform.getExecutableSuffix());
+			File exe = new File(p+separator+"tree-tagger"+_platform.getExecutableSuffix());
 			if (exe.exists()) {
 				return exe.getAbsolutePath();
 			}

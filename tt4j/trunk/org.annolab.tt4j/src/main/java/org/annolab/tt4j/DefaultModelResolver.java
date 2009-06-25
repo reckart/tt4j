@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import static java.io.File.separator;
 
 /**
  * Simple model provider. The model name is actually the path to the model.
@@ -48,13 +49,13 @@ implements ModelResolver
 
 				List<String> paths = new ArrayList<String>();
 				if (System.getProperty("treetagger.home") != null) {
-					paths.add(System.getProperty("treetagger.home")+"/models");
+					paths.add(System.getProperty("treetagger.home")+separator+"models");
 				}
 				if (System.getenv("TAGDIR") != null) {
 					paths.add(System.getenv("TAGDIR")+"/models");
 				}
 				if (System.getenv("TREETAGGER_HOME") != null) {
-					paths.add(System.getenv("TREETAGGER_HOME")+"/models");
+					paths.add(System.getenv("TREETAGGER_HOME")+separator+"models");
 				}
 				String path = System.getenv("PATH");
 				if (path != null) {
@@ -68,7 +69,7 @@ implements ModelResolver
 						continue;
 					}
 
-					_file = new File(p+"/"+fields[0]);
+					_file = new File(p+separator+fields[0]);
 					if (_file.exists()) {
 						found = true;
 						break;
