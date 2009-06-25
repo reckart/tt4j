@@ -1,6 +1,6 @@
 package org.annolab.tt4j;
 
-public 
+public
 interface TokenAdapter<O>
 {
 	String getText(

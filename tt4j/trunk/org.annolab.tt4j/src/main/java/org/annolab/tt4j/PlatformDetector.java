@@ -2,7 +2,7 @@ package org.annolab.tt4j;
 
 import java.nio.ByteOrder;
 
-public 
+public
 class PlatformDetector
 {
 	private String _arch = "";
@@ -10,30 +10,30 @@ class PlatformDetector
 	private String _executableSuffix = "";
 	private ByteOrder _byteOrder = ByteOrder.nativeOrder();
 	private String[] _chmodCmd;
-	
+
 	{
 		updatePlatform(
 				System.getProperties().getProperty("os.name"),
 				System.getProperties().getProperty("os.arch"),
 				ByteOrder.nativeOrder());
 	}
-	
+
 	/**
 	 * Override the operating system name.
 	 * This should only be used in test cases.
-	 * 
+	 *
 	 * @param aArch an OS name as could be found in the os.name system
 	 * 		  property.
 	 */
-	public 
+	public
 	void setOs(
-			String aOs)
+			final String aOs)
 	{
 		updatePlatform(aOs, _arch, _byteOrder);
 	}
-	
-	public 
-	String getOs() 
+
+	public
+	String getOs()
 	{
 		return _os;
 	}
@@ -41,51 +41,51 @@ class PlatformDetector
 	/**
 	 * Override the architecture.
 	 * This should only be used in test cases.
-	 * 
+	 *
 	 * @param aArch an architecture name as could be found in the os.arch system
 	 * 		  property.
 	 */
-	public 
+	public
 	void setArch(
-			String aArch) 
+			final String aArch)
 	{
 		updatePlatform(_os, aArch, _byteOrder);
 	}
-	
-	public 
-	String getArch() 
+
+	public
+	String getArch()
 	{
 		return _arch;
 	}
-	
+
 	/**
 	 * Set the byte order. TreeTagger models are sensitive to the byte order.
 	 * This should only be used in test cases.
-	 * 
+	 *
 	 * @param aByteOrder the byte order.
 	 */
 	public
 	void setByteOrder(
-			ByteOrder aByteOrder)
+			final ByteOrder aByteOrder)
 	{
 		updatePlatform(_os, _arch, aByteOrder);
 	}
-	
+
 	/**
 	 * Get the file suffix used for executable files on the currently configured
 	 * platform.
-	 * 
+	 *
 	 * @return the file suffix used for executable files.
 	 */
-	public 
-	String getExecutableSuffix() 
+	public
+	String getExecutableSuffix()
 	{
 		return _executableSuffix;
 	}
 
 	/**
 	 * Get the byte order.
-	 * 
+	 *
 	 * @return the byte order.
 	 */
 	public
@@ -95,7 +95,7 @@ class PlatformDetector
 	}
 
 	public
-	String getPlatformId() 
+	String getPlatformId()
 	{
 		return _os+"-"+_arch;
 	}
@@ -112,7 +112,7 @@ class PlatformDetector
     	_os = aOs.toLowerCase();
     	_arch = aArch.toLowerCase();
     	String[] chmod = { "chmod", "755", null };
-    	
+
     	// Resolve arch "synonyms"
     	if (
     			_arch.equals("x86") ||
@@ -126,7 +126,7 @@ class PlatformDetector
     	if (_arch.equals("powerpc")) {
     		_arch = "ppc";
     	}
-    	
+
     	// Resolve name "synonyms"
     	if (_os.startsWith("windows")) {
     		_os = "windows";
@@ -142,14 +142,14 @@ class PlatformDetector
     	if (_os.startsWith("sun")) {
     		_os = "solaris";
     	}
-    	
+
     	_chmodCmd = chmod;
-    	
+
     	_byteOrder = aByteOrder;
-    }    
-    
-    public 
-    String[] getChmodCmd() 
+    }
+
+    public
+    String[] getChmodCmd()
     {
 		return _chmodCmd;
 	}
