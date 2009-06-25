@@ -227,6 +227,7 @@ class TreeTaggerWrapper<O>
 
 			_procCmd = join(commands, " ");
 
+
 //			info("Starting treetagger: " + _procCmd);
 			ProcessBuilder pb = new ProcessBuilder(commands);
 			_proc = pb.start();
@@ -304,6 +305,8 @@ class TreeTaggerWrapper<O>
 		private final Iterator<O> tokenIterator;
 		private final BufferedReader in;
 
+		private Exception _exception;
+
     	public
     	Reader(
     			BufferedReader aIn,
@@ -363,5 +366,10 @@ class TreeTaggerWrapper<O>
     			_exception = e;
     		}
     	}
+
+    	public
+    	Exception getException() {
+			return _exception;
+		}
     }
 }
