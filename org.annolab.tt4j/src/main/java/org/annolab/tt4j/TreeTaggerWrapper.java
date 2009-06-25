@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.lang.Thread.State;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.regex.Pattern;
@@ -35,55 +37,55 @@ class TreeTaggerWrapper<O>
 	private TokenHandler<O> _handler = null;
 	private TokenAdapter<O> _adapter = null;
 	private PlatformDetector _platform = null;
-	private ModelResolver _modelProvider = null;
-	private ExecutableResolver _exeProvider = null;
+	private ModelResolver _modelResolver = null;
+	private ExecutableResolver _exeResolver = null;
 
 	{
-		_modelProvider = new DefaultModelResolver();
-		_exeProvider = new DefaultExecutableResolver();
+		_modelResolver = new DefaultModelResolver();
+		_exeResolver = new DefaultExecutableResolver();
 		setPlatformDetector(new PlatformDetector());
 	}
 
 	public
 	void setModelProvider(
-			ModelResolver aModelProvider)
+			final ModelResolver aModelProvider)
 	{
-		_modelProvider = aModelProvider;
-		_modelProvider.setPlatformDetector(_platform);
+		_modelResolver = aModelProvider;
+		_modelResolver.setPlatformDetector(_platform);
 	}
 
 	public
 	void setExecutableProvider(
-			ExecutableResolver aExeProvider)
+			final ExecutableResolver aExeProvider)
 	{
-		_exeProvider = aExeProvider;
-		_exeProvider.setPlatformDetector(_platform);
+		_exeResolver = aExeProvider;
+		_exeResolver.setPlatformDetector(_platform);
 	}
 
 	public
 	void setHandler(
-			TokenHandler<O> aHandler)
+			final TokenHandler<O> aHandler)
 	{
 		_handler = aHandler;
 	}
 
 	public
 	void setAdapter(
-			TokenAdapter<O> aAdapter)
+			final TokenAdapter<O> aAdapter)
 	{
 		_adapter = aAdapter;
 	}
 
 	public
 	void setPlatformDetector(
-			PlatformDetector aPlatform)
+			final PlatformDetector aPlatform)
 	{
 		_platform = aPlatform;
-		if (_modelProvider != null) {
-			_modelProvider.setPlatformDetector(aPlatform);
+		if (_modelResolver != null) {
+			_modelResolver.setPlatformDetector(aPlatform);
 		}
-		if (_exeProvider != null) {
-			_exeProvider.setPlatformDetector(aPlatform);
+		if (_exeResolver != null) {
+			_exeResolver.setPlatformDetector(aPlatform);
 		}
 	}
 
@@ -102,7 +104,7 @@ class TreeTaggerWrapper<O>
 	 */
 	public
 	void setModel(
-			String modelName)
+			final String modelName)
 	throws IOException
 	{
 		// If this model is already set, do nothing.
@@ -118,7 +120,7 @@ class TreeTaggerWrapper<O>
 		}
 
 		if (modelName != null) {
-			_model = _modelProvider.getModel(modelName);
+			_model = _modelResolver.getModel(modelName);
 		}
 		else {
 			_model = null;
@@ -138,13 +140,13 @@ class TreeTaggerWrapper<O>
 		try {
 			setModel(null);
 		}
-		catch (IOException e) {
+		catch (final IOException e) {
 			// Ignore
 		}
 
 		// Clear the executable
-    	if (_exeProvider != null) {
-    		_exeProvider.destroy();
+    	if (_exeResolver != null) {
+    		_exeResolver.destroy();
     	}
 	}
 
@@ -159,43 +161,58 @@ class TreeTaggerWrapper<O>
 
 	public
 	void process(
-			Collection<O> aTokens)
-	throws IOException
+			final Collection<O> aTokens)
+	throws IOException, TreeTaggerException
 	{
-		Process taggerProc = getTaggerProcess();
+		final Process taggerProc = getTaggerProcess();
 
 		// One thread reads the output.
-		BufferedReader in = new BufferedReader(new InputStreamReader(
-			    taggerProc.getInputStream(), _model.getEncoding()));
-		Thread reader = new Thread(new Reader(in, aTokens.iterator()));
-		reader.start();
+		final Reader reader = new Reader(
+				taggerProc.getInputStream(), aTokens.iterator());
+		final Thread readerThread = new Thread(reader);
+		readerThread.start();
 
 		// One thread consumes stderr so we do not get a deadlock.
-		StreamGobbler gob = new StreamGobbler(taggerProc.getErrorStream());
+		final StreamGobbler gob = new StreamGobbler(taggerProc.getErrorStream());
 		new Thread(gob).start();
 
 		// Now we can start writing.
-		OutputStream os = _proc.getOutputStream();
-		PrintWriter pw = new PrintWriter(new BufferedWriter(
-		    new OutputStreamWriter(os, _model.getEncoding())));
+		final Writer writer = new Writer(aTokens.iterator());
+		new Thread(writer).start();
 
-		pw.println(STARTOFTEXT);
-
-		for (O token : aTokens) {
-			pw.println(getText(token));
-			pw.flush();
-		}
-
-		pw.println(ENDOFTEXT);
-		pw.println("\n.\n"+_model.getFlushSequence()+"\n\n");
-		pw.flush();
-
+		// Wait for the processing to end. Every once in a while we check if an
+		// exception has been thrown. When the Reader thread is complete, we can
+		// stop.
 		try {
-			gob.done();
-			reader.join();
+			while (true) {
+				// If the reader or writer fail, we kill the treetagger and bail
+				// out. This may be a bit harsh, but easier than coding the
+				// Reader and Writer so that we can abort them. If the process
+				// is dead, the streams die and then the threads will also die
+				// with an IOException.
+				if (writer.getException() != null) {
+					taggerProc.destroy();
+					throw new TreeTaggerException(writer.getException());
+				}
+
+				if (reader.getException() != null) {
+					taggerProc.destroy();
+					throw new TreeTaggerException(reader.getException());
+				}
+
+				// Otherwise we wait for the Reader thread to end.
+				if (readerThread.getState() == State.TERMINATED) {
+					break;
+				}
+
+				Thread.sleep(100);
+			}
 		}
-		catch (InterruptedException e) {
+		catch (final InterruptedException e) {
 			// Ignore
+		}
+		finally {
+			gob.done();
 		}
 
 //		info("Parsed " + count + " pos segments");
@@ -214,22 +231,18 @@ class TreeTaggerWrapper<O>
     	if (_proc == null) {
         	_model.install();
 
-			// fetch output from pos tagger
-			// fill output into annotation
-			String commands[] = {
-					_exeProvider.getExecutable(),
+			final String commands[] = {
+					_exeResolver.getExecutable(),
 					"-quiet",
 					"-no-unknown",
 					"-sgml",
 					"-token",
 					"-lemma",
 					_model.getFile().getAbsolutePath() };
-
 			_procCmd = join(commands, " ");
 
-
 //			info("Starting treetagger: " + _procCmd);
-			ProcessBuilder pb = new ProcessBuilder(commands);
+			final ProcessBuilder pb = new ProcessBuilder(commands);
 			_proc = pb.start();
     	} else {
 //    		info("Re-using treetagger: " + _procCmd);
@@ -253,7 +266,7 @@ class TreeTaggerWrapper<O>
 
     private
 	String getText(
-			O o)
+			final O o)
 	{
 		if (_adapter == null) {
 			return o.toString();
@@ -272,7 +285,7 @@ class TreeTaggerWrapper<O>
 
     	public
     	StreamGobbler(
-    			InputStream aIn)
+    			final InputStream aIn)
     	{
 			in = aIn;
 		}
@@ -292,7 +305,7 @@ class TreeTaggerWrapper<O>
 	    			in.wait(100);
 	    		}
     		}
-    		catch (Exception e) {
+    		catch (final Exception e) {
     			done = true;
     		}
     	}
@@ -304,15 +317,18 @@ class TreeTaggerWrapper<O>
     {
 		private final Iterator<O> tokenIterator;
 		private final BufferedReader in;
-
+		private final InputStream ins;
 		private Exception _exception;
 
     	public
     	Reader(
-    			BufferedReader aIn,
-    			Iterator<O> aTokenIterator)
+    			final InputStream aIn,
+    			final Iterator<O> aTokenIterator)
+    	throws UnsupportedEncodingException
 		{
-    		in = aIn;
+    		ins = aIn;
+    		in = new BufferedReader(new InputStreamReader(
+    			    ins, _model.getEncoding()));
     		tokenIterator = aTokenIterator;
 		}
 
@@ -324,7 +340,6 @@ class TreeTaggerWrapper<O>
 	    		boolean inText = false;
 	    		while (true) {
 	    			s = in.readLine();
-	//        		System.out.println("<-- "+s);
 
 	    			if (s == null) {
 	    				throw new IOException(
@@ -348,8 +363,7 @@ class TreeTaggerWrapper<O>
 	    			if (inText) {
 	    				// Get word and tag
 	    				String fields[] = RE_TAB.split(s, 2);
-	//    				String word = fields[0].trim();
-	    				String tags  = fields[1];
+	    				final String tags  = fields[1];
 	    				fields = RE_WHITESPACE.split(tags, 3);
 
 	    				// Get original token segment
@@ -362,13 +376,67 @@ class TreeTaggerWrapper<O>
 	    			}
 	    		}
     		}
-    		catch (Exception e) {
+    		catch (final Exception e) {
     			_exception = e;
     		}
     	}
 
     	public
     	Exception getException() {
+			return _exception;
+		}
+    }
+
+	private
+    class Writer
+    implements Runnable
+    {
+		private final Iterator<O> tokenIterator;
+		private Exception _exception;
+		private PrintWriter _pw;
+
+    	public
+    	Writer(
+    			final Iterator<O> aTokenIterator)
+		{
+    		tokenIterator = aTokenIterator;
+		}
+
+    	public
+    	void run()
+    	{
+    		try {
+    			final OutputStream os = _proc.getOutputStream();
+
+    			_pw = new PrintWriter(new BufferedWriter(
+    			    new OutputStreamWriter(os, _model.getEncoding())));
+
+    			send(STARTOFTEXT);
+
+    			while (tokenIterator.hasNext()) {
+    				send(getText(tokenIterator.next()));
+    			}
+
+    			send(ENDOFTEXT);
+				send("\n.\n"+_model.getFlushSequence()+"\n\n");
+    		}
+    		catch (final Exception e) {
+    			_exception = e;
+    		}
+    	}
+
+    	private
+    	void send(
+    			final String line)
+    	{
+    		_pw.println(line);
+//    		System.out.println("--> "+line);
+    		_pw.flush();
+    	}
+
+    	public
+    	Exception getException()
+		{
 			return _exception;
 		}
     }

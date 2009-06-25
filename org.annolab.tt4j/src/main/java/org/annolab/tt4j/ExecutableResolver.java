@@ -2,9 +2,8 @@ package org.annolab.tt4j;
 
 import java.io.IOException;
 
-
-public 
-interface ExecutableResolver 
+public
+interface ExecutableResolver
 {
 	void setPlatformDetector(
 			PlatformDetector aPlatform);
@@ -13,5 +12,4 @@ interface ExecutableResolver
 
 	String getExecutable()
 	throws IOException ;
-
 }

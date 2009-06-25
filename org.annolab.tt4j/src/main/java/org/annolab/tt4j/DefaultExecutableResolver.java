@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.Arrays.*;
 import static java.io.File.separator;
+import static org.annolab.tt4j.Util.getSearchPaths;
 
 /**
  * Assume that TreeTagger is installed and available in the path.
@@ -28,7 +28,7 @@ implements ExecutableResolver
 
 	public
 	void setAdditionalPaths(
-			List<String> aAdditionalPaths)
+			final List<String> aAdditionalPaths)
 	{
 		_additionalPaths.clear();
 		_additionalPaths.addAll(aAdditionalPaths);
@@ -38,28 +38,12 @@ implements ExecutableResolver
 	String getExecutable()
 	throws IOException
 	{
-		List<String> paths = new ArrayList<String>();
-		if (System.getProperty("treetagger.home") != null) {
-			paths.add(System.getProperty("treetagger.home")+separator+"bin");
-		}
-		if (System.getenv("TAGDIR") != null) {
-			paths.add(System.getenv("TAGDIR")+separator+"bin");
-		}
-		if (System.getenv("TREETAGGER_HOME") != null) {
-			paths.add(System.getenv("TREETAGGER_HOME")+separator+"bin");
-		}
-		String path = System.getenv("PATH");
-		if (path != null) {
-			paths.addAll(asList(path.split(File.pathSeparator)));
-		}
-		paths.addAll(_additionalPaths);
-
-		for (String p : paths) {
+		for (final String p : getSearchPaths(_additionalPaths)) {
 			if (p == null) {
 				continue;
 			}
 
-			File exe = new File(p+separator+"tree-tagger"+_platform.getExecutableSuffix());
+			final File exe = new File(p+separator+"tree-tagger"+_platform.getExecutableSuffix());
 			if (exe.exists()) {
 				return exe.getAbsolutePath();
 			}
@@ -70,7 +54,7 @@ implements ExecutableResolver
 
 	public
 	void setPlatformDetector(
-			PlatformDetector aPlatform)
+			final PlatformDetector aPlatform)
 	{
 		_platform = aPlatform;
 	}

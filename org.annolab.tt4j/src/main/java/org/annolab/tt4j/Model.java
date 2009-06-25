@@ -3,12 +3,12 @@ package org.annolab.tt4j;
 import java.io.File;
 import java.io.IOException;
 
-public 
-interface Model 
+public
+interface Model
 {
 	String getName();
-	
-	void install() 
+
+	void install()
 	throws IOException;
 
 	File getFile();

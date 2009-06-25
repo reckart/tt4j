@@ -1,12 +1,11 @@
 package org.annolab.tt4j;
 
-import static java.util.Arrays.asList;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import static java.io.File.separator;
+import static org.annolab.tt4j.Util.*;
 
 /**
  * Simple model provider. The model name is actually the path to the model.
@@ -25,7 +24,7 @@ implements ModelResolver
 
 	public
 	void setAdditionalPaths(
-			List<String> aAdditionalPaths)
+			final List<String> aAdditionalPaths)
 	{
 		_additionalPaths.clear();
 		_additionalPaths.addAll(aAdditionalPaths);
@@ -42,29 +41,13 @@ implements ModelResolver
 			private final String _name;
 			{
 				_name = aModelName;
-				String[] fields = aModelName.split(":");
+				final String[] fields = aModelName.split(":");
 
 				// The using the name as path
 				_encoding =  (fields.length > 1) ? fields[1] : "UTF-8";
 
-				List<String> paths = new ArrayList<String>();
-				if (System.getProperty("treetagger.home") != null) {
-					paths.add(System.getProperty("treetagger.home")+separator+"models");
-				}
-				if (System.getenv("TAGDIR") != null) {
-					paths.add(System.getenv("TAGDIR")+"/models");
-				}
-				if (System.getenv("TREETAGGER_HOME") != null) {
-					paths.add(System.getenv("TREETAGGER_HOME")+separator+"models");
-				}
-				String path = System.getenv("PATH");
-				if (path != null) {
-					paths.addAll(asList(path.split(File.pathSeparator)));
-				}
-				paths.addAll(_additionalPaths);
-
 				boolean found = false;
-				for (String p : paths) {
+				for (final String p : getSearchPaths(_additionalPaths)) {
 					if (p == null) {
 						continue;
 					}
@@ -122,7 +105,7 @@ implements ModelResolver
 
 	public
 	void setPlatformDetector(
-			PlatformDetector aPlatform)
+			final PlatformDetector aPlatform)
 	{
 		_platform = aPlatform;
 	}
