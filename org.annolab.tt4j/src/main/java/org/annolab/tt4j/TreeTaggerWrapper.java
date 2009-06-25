@@ -175,7 +175,7 @@ class TreeTaggerWrapper<O>
 		boolean inText = false;
 		while (true) {
 			s = in.readLine();
-    		System.out.println("<-- "+s);
+//    		System.out.println("<-- "+s);
 
 			if (s == null) {
 				throw new IOException(
@@ -327,7 +327,7 @@ class TreeTaggerWrapper<O>
     			String line)
     	{
     		_pw.println(line);
-    		System.out.println("--> "+line);
+//    		System.out.println("--> "+line);
     		_pw.flush();
     	}
 
