@@ -5,6 +5,7 @@ import static org.annolab.tt4j.Util.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -163,58 +164,35 @@ class TreeTaggerWrapper<O>
 	{
 		Process taggerProc = getTaggerProcess();
 
-    	Thread writer = new Thread(new Writer(aTokens.iterator()));
-
-    	writer.start();
-
+		// One thread reads the output.
 		BufferedReader in = new BufferedReader(new InputStreamReader(
-		    taggerProc.getInputStream(), _model.getEncoding()));
+			    taggerProc.getInputStream(), _model.getEncoding()));
+		Thread reader = new Thread(new Reader(in, aTokens.iterator()));
+		reader.start();
 
-		String s;
-		Iterator<O> tokenIterator = aTokens.iterator();
-		boolean inText = false;
-		while (true) {
-			s = in.readLine();
-//    		System.out.println("<-- "+s);
+		// One thread consumes stderr so we do not get a deadlock.
+		StreamGobbler gob = new StreamGobbler(taggerProc.getErrorStream());
+		new Thread(gob).start();
 
-			if (s == null) {
-				throw new IOException(
-						"TreeTagger has died. Make sure the following " +
-						"comand (in parentheses) works when running " +
-						"it from the command line: [echo \"test\" | " +
-						_procCmd+"]");
-			}
+		// Now we can start writing.
+		OutputStream os = _proc.getOutputStream();
+		PrintWriter pw = new PrintWriter(new BufferedWriter(
+		    new OutputStreamWriter(os, _model.getEncoding())));
 
-			s = s.trim();
+		pw.println(STARTOFTEXT);
 
-			if (STARTOFTEXT.equals(s)) {
-				inText = true;
-				continue;
-			}
-
-			if (ENDOFTEXT.equals(s)) {
-				break;
-			}
-
-			if (inText) {
-				// Get word and tag
-				String fields[] = RE_TAB.split(s, 2);
-//				String word = fields[0].trim();
-				String tags  = fields[1];
-				fields = RE_WHITESPACE.split(tags, 3);
-
-				// Get original token segment
-				if (_handler != null) {
-					_handler.token(
-							tokenIterator.next(),
-							fields[0].trim().intern(),
-							fields[1].trim());
-				}
-			}
+		for (O token : aTokens) {
+			pw.println(getText(token));
+			pw.flush();
 		}
 
+		pw.println(ENDOFTEXT);
+		pw.println("\n.\n"+_model.getFlushSequence()+"\n\n");
+		pw.flush();
+
 		try {
-			writer.join();
+			gob.done();
+			reader.join();
 		}
 		catch (InterruptedException e) {
 			// Ignore
@@ -250,7 +228,8 @@ class TreeTaggerWrapper<O>
 			_procCmd = join(commands, " ");
 
 //			info("Starting treetagger: " + _procCmd);
-			_proc = Runtime.getRuntime().exec(commands);
+			ProcessBuilder pb = new ProcessBuilder(commands);
+			_proc = pb.start();
     	} else {
 //    		info("Re-using treetagger: " + _procCmd);
     	}
@@ -283,19 +262,54 @@ class TreeTaggerWrapper<O>
 		}
 	}
 
+    private
+    class StreamGobbler
+    implements Runnable
+    {
+    	private final InputStream in;
+    	private boolean done = false;
+
+    	public
+    	StreamGobbler(
+    			InputStream aIn)
+    	{
+			in = aIn;
+		}
+
+    	public
+    	void done()
+    	{
+    		done = true;
+    	}
+
+    	public
+    	void run()
+    	{
+    		try {
+	    		while(!done) {
+	    			in.skip(in.available());
+	    			in.wait(100);
+	    		}
+    		}
+    		catch (Exception e) {
+    			done = true;
+    		}
+    	}
+    }
+
 	private
-    class Writer
+    class Reader
     implements Runnable
     {
 		private final Iterator<O> tokenIterator;
-
-		private Exception _exception;
-		private PrintWriter _pw;
+		private final BufferedReader in;
 
     	public
-    	Writer(
+    	Reader(
+    			BufferedReader aIn,
     			Iterator<O> aTokenIterator)
 		{
+    		in = aIn;
     		tokenIterator = aTokenIterator;
 		}
 
@@ -303,38 +317,51 @@ class TreeTaggerWrapper<O>
     	void run()
     	{
     		try {
-    			OutputStream os = _proc.getOutputStream();
+	    		String s;
+	    		boolean inText = false;
+	    		while (true) {
+	    			s = in.readLine();
+	//        		System.out.println("<-- "+s);
 
-    			_pw = new PrintWriter(new BufferedWriter(
-    			    new OutputStreamWriter(os, _model.getEncoding())));
+	    			if (s == null) {
+	    				throw new IOException(
+	    						"TreeTagger has died. Make sure the following " +
+	    						"comand (in parentheses) works when running " +
+	    						"it from the command line: [echo \"test\" | " +
+	    						_procCmd+"]");
+	    			}
 
-    			send(STARTOFTEXT);
+	    			s = s.trim();
 
-    			while (tokenIterator.hasNext()) {
-    				send(getText(tokenIterator.next()));
-    			}
+	    			if (STARTOFTEXT.equals(s)) {
+	    				inText = true;
+	    				continue;
+	    			}
 
-    			send(ENDOFTEXT);
-				send("\n.\n"+_model.getFlushSequence()+"\n\n");
+	    			if (ENDOFTEXT.equals(s)) {
+	    				break;
+	    			}
+
+	    			if (inText) {
+	    				// Get word and tag
+	    				String fields[] = RE_TAB.split(s, 2);
+	//    				String word = fields[0].trim();
+	    				String tags  = fields[1];
+	    				fields = RE_WHITESPACE.split(tags, 3);
+
+	    				// Get original token segment
+	    				if (_handler != null) {
+	    					_handler.token(
+	    							tokenIterator.next(),
+	    							fields[0].trim().intern(),
+	    							fields[1].trim());
+	    				}
+	    			}
+	    		}
     		}
     		catch (Exception e) {
     			_exception = e;
     		}
     	}
-
-    	private
-    	void send(
-    			String line)
-    	{
-    		_pw.println(line);
-//    		System.out.println("--> "+line);
-    		_pw.flush();
-    	}
-
-    	public
-    	Exception getException()
-		{
-			return _exception;
-		}
     }
 }
