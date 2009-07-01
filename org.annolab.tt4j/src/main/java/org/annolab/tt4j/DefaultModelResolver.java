@@ -31,6 +31,12 @@ implements ModelResolver
 	}
 
 	public
+	PlatformDetector getPlatformDetector()
+	{
+		return _platform;
+	}
+
+	public
 	Model getModel(
 			final String aModelName)
 	throws IOException
@@ -46,21 +52,27 @@ implements ModelResolver
 				// The using the name as path
 				_encoding =  (fields.length > 1) ? fields[1] : "UTF-8";
 
-				boolean found = false;
-				for (final String p : getSearchPaths(_additionalPaths)) {
-					if (p == null) {
-						continue;
-					}
+				if (new File(fields[0]).exists()) {
+					_file = new File(fields[0]);
 
-					_file = new File(p+separator+fields[0]);
-					if (_file.exists()) {
-						found = true;
-						break;
-					}
 				}
+				else {
+					boolean found = false;
+					for (final String p : getSearchPaths(_additionalPaths, "models")) {
+						if (p == null) {
+							continue;
+						}
 
-				if (!found) {
-					throw new IOException("Unable to locate model ["+fields[0]+"]");
+						_file = new File(p+separator+fields[0]);
+						if (_file.exists()) {
+							found = true;
+							break;
+						}
+					}
+
+					if (!found) {
+						throw new IOException("Unable to locate model ["+fields[0]+"]");
+					}
 				}
 			}
 
