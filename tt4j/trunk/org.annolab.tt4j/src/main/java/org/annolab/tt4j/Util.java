@@ -13,18 +13,19 @@ class Util
 {
 	public static
 	List<String> getSearchPaths(
-			final List<String> aAdditionalPaths)
+			final List<String> aAdditionalPaths,
+			final String subPath)
 	{
 		final List<String> paths = new ArrayList<String>();
 		paths.addAll(aAdditionalPaths);
 		if (System.getProperty("treetagger.home") != null) {
-			paths.add(System.getProperty("treetagger.home")+separator+"models");
+			paths.add(System.getProperty("treetagger.home")+separator+subPath);
 		}
 		if (System.getenv("TREETAGGER_HOME") != null) {
-			paths.add(System.getenv("TREETAGGER_HOME")+separator+"models");
+			paths.add(System.getenv("TREETAGGER_HOME")+separator+subPath);
 		}
 		if (System.getenv("TAGDIR") != null) {
-			paths.add(System.getenv("TAGDIR")+"/models");
+			paths.add(System.getenv("TAGDIR")+subPath);
 		}
 //		String path = System.getenv("PATH");
 //		if (path != null) {

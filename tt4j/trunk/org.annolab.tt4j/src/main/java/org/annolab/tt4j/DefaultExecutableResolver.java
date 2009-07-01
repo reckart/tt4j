@@ -38,7 +38,7 @@ implements ExecutableResolver
 	String getExecutable()
 	throws IOException
 	{
-		for (final String p : getSearchPaths(_additionalPaths)) {
+		for (final String p : getSearchPaths(_additionalPaths, "bin")) {
 			if (p == null) {
 				continue;
 			}
