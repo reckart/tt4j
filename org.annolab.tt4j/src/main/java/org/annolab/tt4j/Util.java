@@ -25,7 +25,7 @@ class Util
 			paths.add(System.getenv("TREETAGGER_HOME")+separator+subPath);
 		}
 		if (System.getenv("TAGDIR") != null) {
-			paths.add(System.getenv("TAGDIR")+subPath);
+			paths.add(System.getenv("TAGDIR")+separator+subPath);
 		}
 //		String path = System.getenv("PATH");
 //		if (path != null) {
