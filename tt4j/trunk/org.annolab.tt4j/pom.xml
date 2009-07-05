@@ -6,8 +6,8 @@
 	<name>TreeTagger for Java</name>
 	<version>0.0.1-SNAPSHOT</version>
 	<scm>
-		<developerConnection>https://linglit68.linglit.tu-darmstadt.de/svn/annolab/tt4j/trunk</developerConnection>
-		<tag>https://linglit68.linglit.tu-darmstadt.de/svn/annolab/tt4j/tags</tag>
+		<developerConnection>scm:svn:https://linglit68.linglit.tu-darmstadt.de/svn/annolab/tt4j/trunk</developerConnection>
+		<tag>scm:svn:https://linglit68.linglit.tu-darmstadt.de/svn/annolab/tt4j/tags</tag>
 	</scm>
 	<build>
 		<plugins>
