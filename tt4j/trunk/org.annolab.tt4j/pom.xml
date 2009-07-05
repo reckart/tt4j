@@ -5,6 +5,10 @@
 	<artifactId>org.annolab.tt4j</artifactId>
 	<name>TreeTagger for Java</name>
 	<version>0.0.1-SNAPSHOT</version>
+	<scm>
+		<developerConnection>https://linglit68.linglit.tu-darmstadt.de/svn/annolab/tt4j/trunk</developerConnection>
+		<tag>https://linglit68.linglit.tu-darmstadt.de/svn/annolab/tt4j/tags</tag>
+	</scm>
 	<build>
 		<plugins>
 			<plugin>
@@ -23,6 +27,10 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+			</plugins>
+		</pluginManagement>
 	</build>
 	<dependencies>
 		<dependency>
