@@ -7,6 +7,13 @@
 	<scm>
 		<developerConnection>scm:svn:https://linglit68.linglit.tu-darmstadt.de/svn/annolab/tt4j/trunk</developerConnection>
 	</scm>
+	<!-- Enabling the use of FTP -->
+  	<distributionManagement>
+    	<repository>
+    		<id>ftp-candledark</id>
+    		<url>ftp://candledark.org/annolab/m2/releases</url>
+    	</repository>
+  	</distributionManagement>
 	<build>
 		<plugins>
 			<plugin>
