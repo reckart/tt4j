@@ -3,10 +3,9 @@
 	<groupId>org.annolab.tt4j</groupId>
 	<artifactId>org.annolab.tt4j</artifactId>
 	<name>TreeTagger for Java</name>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<scm>
-		<developerConnection>scm:svn:https://linglit68.linglit.tu-darmstadt.de/svn/annolab/tt4j/tags/org.annolab.tt4j-1.0.0</developerConnection>
-		<tag>scm:svn:https://linglit68.linglit.tu-darmstadt.de/svn/annolab/tt4j/tags</tag>
+		<developerConnection>scm:svn:https://linglit68.linglit.tu-darmstadt.de/svn/annolab/tt4j/trunk</developerConnection>
 	</scm>
 	<build>
 		<plugins>
