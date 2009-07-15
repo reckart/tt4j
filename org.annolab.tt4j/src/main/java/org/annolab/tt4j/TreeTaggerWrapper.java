@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2009 Richard Eckart de Castilho.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser Public License v2.1
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ * 
+ * Contributors:
+ *     Richard Eckart de Castilho - initial API and implementation
+ ******************************************************************************/
 package org.annolab.tt4j;
 
 import static org.annolab.tt4j.Util.*;
@@ -20,28 +30,28 @@ import java.util.regex.Pattern;
  * Main TreeTagger wrapper class. One TreeTagger process will be created and
  * maintained for each instance of this class. The associated process will be
  * terminated and restarted automatically if the model is changed
- * (@link {@link #setModel(String)}). Otherwise the process remains running,
+ * ({@link #setModel(String)}). Otherwise the process remains running,
  * in the background once it is started which saves a lot of time. The process
  * remains dormant while not used and only consumes some memory, but no CPU
  * while it is not used.
- * <br/>
+ * <p>
  * During analysis, two threads are used to communicate with the TreeTagger.
  * One process writes tokens to the TreeTagger process, while the other
  * receives the analyzed tokens.
- * <br/>
+ * <p>
  * For easy integration into application, this class takes any object containing
  * token information and either uses its {@link Object#toString()} method or
  * an {@link TokenAdapter} set using {@link #setAdapter(TokenAdapter)} to extract
  * the actual token. To receive the an analyzed token, set a custom
  * {@link TokenHandler} using {@link #setHandler(TokenHandler)}.
- * <br/>
+ * <p>
  * Per default the TreeTagger executable is searched for in the directories
  * indicated by the system propery {@literal treetagger.home}, the
  * environment variables {@literal TREETAGGER_HOME} and {@literal TAGDIR}
  * in this order. A full path to a model file optionally appended by a
  * {@literal :} and the model encoding is expected by the {@link #setModel(String)}
  * method.
- * <br/>
+ * <p>
  * For additional flexibility, register a custom {@link ExecutableResolver}
  * using {@link #setExecutableProvider(ExecutableResolver)} or a custom
  * {@link ModelResolver} using {@link #setModelProvider(ModelResolver)}. Custom
@@ -49,7 +59,23 @@ import java.util.regex.Pattern;
  * from some location and temporarily or permanently install them in the file
  * system. A custom model resolver may also be used to resolve a language code
  * (e.g. {@literal en}) to a particular model.
- *
+ * <p>
+ * A simple illustration of how to use this class:
+ * <pre>
+ * TreeTaggerWrapper tt = new TreeTaggerWrapper<String>();
+ * try {
+ *     tt.setModel("/treetagger/models/english.par:iso8859-1");
+ *     tt.setHandler(new TokenHandler<String>() {
+ *         void token(String token, String pos, String lemma) {
+ *             System.out.println(token+"\t"+pos+"\t"+lemma);
+ *         }
+ *     });
+ *     tt.process(asList(new String[] {"This", "is", "a", "test", "."}));
+ * }
+ * finally {
+ *     tt.destroy();
+ * }
+ * </pre>
  * @author Richard Eckart de Castilho
  *
  * @param <O> the token type.

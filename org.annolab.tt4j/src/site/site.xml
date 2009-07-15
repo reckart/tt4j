@@ -4,12 +4,15 @@
     <body>
         <menu name="Overview">
             <item name="Introduction" href="index.html"/>
+            <item name="Usage" href="usage.html"/>
             <item name="Downloads" href="download.html"/>
         </menu>
         
+        <!--
         <menu name="Examples">
             <item name="UIMA component" href="/examples/creating-content.html"/>
         </menu>
+        -->
         
         <menu ref="reports" />        
     </body>
