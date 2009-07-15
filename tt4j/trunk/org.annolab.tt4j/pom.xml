@@ -30,6 +30,10 @@
     		<id>ftp-annolab</id>
     		<url>ftp://annolab.org/annolab/m2/releases</url>
     	</repository>
+    	<site>
+    		<id>ftp-annolab</id>
+    		<url>ftp://annolab.org/annolab/tt4j</url>
+    	</site>
   	</distributionManagement>
 	<build>
 		<plugins>
