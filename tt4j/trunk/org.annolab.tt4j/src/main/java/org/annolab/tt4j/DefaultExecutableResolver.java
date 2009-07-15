@@ -26,6 +26,12 @@ implements ExecutableResolver
 		// Do nothing
 	}
 
+	/**
+	 * Set additional paths that will be used for searching the TreeTagger
+	 * executable.
+	 *
+	 * @param aAdditionalPaths list of additional paths.
+	 */
 	public
 	void setAdditionalPaths(
 			final List<String> aAdditionalPaths)

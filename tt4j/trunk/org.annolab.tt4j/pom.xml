@@ -4,6 +4,22 @@
 	<artifactId>org.annolab.tt4j</artifactId>
 	<name>TreeTagger for Java</name>
 	<version>1.0.5-SNAPSHOT</version>
+	<licenses>
+		<license>
+			<name>LGPL</name>
+			<distribution>manual</distribution>
+			<url>http://www.gnu.org/licenses/lgpl-3.0.txt</url>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<id>rec</id>
+			<name>Richard Eckart de Castilho</name>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+	</developers>
 	<scm>
 		<developerConnection>scm:svn:https://linglit68.linglit.tu-darmstadt.de/svn/annolab/tt4j/trunk</developerConnection>
 	</scm>
@@ -56,4 +72,26 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<reporting>
+		<excludeDefaults>true</excludeDefaults>
+		<outputDirectory>${basedir}/target/site</outputDirectory>
+		<plugins>
+			<plugin>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.0.1</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>project-team</report>
+							<report>license</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</reporting>	
 </project>

@@ -1,0 +1,17 @@
+ -----
+ Title
+ -----
+ Author
+ -----
+ Date
+ -----
+
+~~ http://maven.apache.org/doxia/references/apt-format.html
+
+TreeTagger for Java (TT4J)
+
+ TreeTagger for Java is a Java wrapper around the popular 
+ {{{http://www.ims.uni-stuttgart.de/projekte/corplex/TreeTagger/}TreeTagger}}
+ package by Helmut Schmid. It was written with a focus on platform-independence
+ and easy integration into applications. It is written in Java 5 and has been 
+ tested on OS X (10.4 and 10.5), Ubuntu Linux and Windows.

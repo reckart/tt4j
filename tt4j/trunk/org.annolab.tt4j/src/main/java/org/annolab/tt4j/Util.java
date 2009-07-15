@@ -7,25 +7,50 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
-public
+/**
+ * Utility functions.
+ *
+ * @author Richard Eckart de Castilho
+ */
+public final
 class Util
 {
+	private
+	Util()
+	{
+		// No instances
+	}
+
+	/**
+	 * Get the search paths for a model or executable. Using the {@code aSubPath}
+	 * argument, executables and models can be searched for in different
+	 * locations, e.g. executables in {@literal executable} and models in
+	 * {@literal models}.
+	 * <br/>
+	 * The returned list contains the additional search paths, the value of the
+	 * system property {@literal treetagger.home} and the
+	 * environment variables {@literal TREETAGGER_HOME} and {@literal TAGDIR}
+	 * in this order.
+	 *
+	 * @param aAdditionalPaths additional paths to search in.
+	 * @param aSubPath search in the given sub-directory of the search paths.
+	 * @return a list of search paths.
+	 */
 	public static
 	List<String> getSearchPaths(
 			final List<String> aAdditionalPaths,
-			final String subPath)
+			final String aSubPath)
 	{
 		final List<String> paths = new ArrayList<String>();
 		paths.addAll(aAdditionalPaths);
 		if (System.getProperty("treetagger.home") != null) {
-			paths.add(System.getProperty("treetagger.home")+separator+subPath);
+			paths.add(System.getProperty("treetagger.home")+separator+aSubPath);
 		}
 		if (System.getenv("TREETAGGER_HOME") != null) {
-			paths.add(System.getenv("TREETAGGER_HOME")+separator+subPath);
+			paths.add(System.getenv("TREETAGGER_HOME")+separator+aSubPath);
 		}
 		if (System.getenv("TAGDIR") != null) {
-			paths.add(System.getenv("TAGDIR")+separator+subPath);
+			paths.add(System.getenv("TAGDIR")+separator+aSubPath);
 		}
 //		String path = System.getenv("PATH");
 //		if (path != null) {
@@ -34,23 +59,36 @@ class Util
 		return paths;
 	}
 
+    /**
+     * Join the given strings into a single string separated by the given
+     * separator.
+     *
+     * @param aStrings strings to join.
+     * @param aSeparator a separator.
+     * @return the joined string.
+     */
     public static
 	String join(
-			final String[] s,
-			final String sep)
+			final String[] aStrings,
+			final String aSeparator)
 	{
 		final StringBuilder sb = new StringBuilder();
 
-		for (int i = 0; i < s.length; i++) {
-			sb.append(s[i]);
-			if (i < s.length - 1) {
-				sb.append(sep);
+		for (int i = 0; i < aStrings.length; i++) {
+			sb.append(aStrings[i]);
+			if (i < aStrings.length - 1) {
+				sb.append(aSeparator);
 			}
 		}
 
 		return sb.toString();
 	}
 
+    /**
+     * Close the given {@link Closeable}.
+     *
+     * @param aClosable a closable object.
+     */
     public static
     void close(
     		final Closeable aClosable)
