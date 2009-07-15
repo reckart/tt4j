@@ -2,6 +2,11 @@ package org.annolab.tt4j;
 
 import java.nio.ByteOrder;
 
+/**
+ * Detect platform information and normalize it.
+ *
+ * @author Richard Eckart de Castilho
+ */
 public
 class PlatformDetector
 {
@@ -22,7 +27,7 @@ class PlatformDetector
 	 * Override the operating system name.
 	 * This should only be used in test cases.
 	 *
-	 * @param aArch an OS name as could be found in the os.name system
+	 * @param aOs an OS name as could be found in the os.name system
 	 * 		  property.
 	 */
 	public
@@ -32,6 +37,12 @@ class PlatformDetector
 		updatePlatform(aOs, _arch, _byteOrder);
 	}
 
+	/**
+	 * Get the operating system.
+	 *
+	 * @return {@literal "windows"}, {@literal "osx"}, {@literal "linux"} or
+	 *    {@literal "solaris"}.
+	 */
 	public
 	String getOs()
 	{
@@ -42,8 +53,8 @@ class PlatformDetector
 	 * Override the architecture.
 	 * This should only be used in test cases.
 	 *
-	 * @param aArch an architecture name as could be found in the os.arch system
-	 * 		  property.
+	 * @param aArch {@literal "big-endian"} for PowerPC or Sparc systems or
+	 *      {@literal "little-endian"} for x86 systems.
 	 */
 	public
 	void setArch(
@@ -52,6 +63,12 @@ class PlatformDetector
 		updatePlatform(_os, aArch, _byteOrder);
 	}
 
+	/**
+	 * Get the platform architecture.
+	 *
+	 * @return {@literal "ppc"}, {@literal "x86_32"}, {@literal "x86_64"} or
+	 *    {"amd64"}
+	 */
 	public
 	String getArch()
 	{
@@ -94,6 +111,12 @@ class PlatformDetector
 		return _byteOrder.toString().replace("_", "-").toLowerCase();
 	}
 
+	/**
+	 * Get the platform ID which is {@link #getOs()} and {@link #getArch()}
+	 * separated by a {@literal "-"} (dash).
+	 *
+	 * @return the platform ID.
+	 */
 	public
 	String getPlatformId()
 	{
@@ -102,6 +125,10 @@ class PlatformDetector
 
     /**
      * Updates the platform-specific settings and normalizes them.
+     *
+     * @param aOs the operating system string.
+     * @param aArch the architecture string.
+     * @param aByteOrder the byte-order string.
      */
     public
     void updatePlatform(
@@ -148,6 +175,12 @@ class PlatformDetector
     	_byteOrder = aByteOrder;
     }
 
+    /**
+     * Get the {@literal chmod} (change permissions) command for the current
+     * platform (if one is necessary).
+     *
+     * @return the name of the {@literal chmod} command.
+     */
     public
     String[] getChmodCmd()
     {

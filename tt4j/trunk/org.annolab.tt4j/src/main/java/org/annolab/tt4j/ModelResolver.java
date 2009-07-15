@@ -2,9 +2,19 @@ package org.annolab.tt4j;
 
 import java.io.IOException;
 
+/**
+ * Resolve the location of the TreeTagger model.
+ *
+ * @author Richard Eckart de Castilho
+ */
 public
 interface ModelResolver
 {
+	/**
+	 * Set platform information.
+	 *
+	 * @param aPlatform the platform information.
+	 */
 	void setPlatformDetector(
 			PlatformDetector aPlatform);
 

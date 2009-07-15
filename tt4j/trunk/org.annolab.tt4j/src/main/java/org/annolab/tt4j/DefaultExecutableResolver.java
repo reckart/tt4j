@@ -11,7 +11,7 @@ import static org.annolab.tt4j.Util.getSearchPaths;
 /**
  * Assume that TreeTagger is installed and available in the path.
  *
- * @author Richard Eckart
+ * @author Richard Eckart de Castilho
  */
 public
 class DefaultExecutableResolver
@@ -31,6 +31,7 @@ implements ExecutableResolver
 	 * executable.
 	 *
 	 * @param aAdditionalPaths list of additional paths.
+	 * @see Util#getSearchPaths(List, String)
 	 */
 	public
 	void setAdditionalPaths(
@@ -58,6 +59,9 @@ implements ExecutableResolver
 		throw new IOException("Unable to locate tree-tagger binary");
 	}
 
+	/**
+	 * Set platform information.
+	 */
 	public
 	void setPlatformDetector(
 			final PlatformDetector aPlatform)
