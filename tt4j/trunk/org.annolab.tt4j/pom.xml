@@ -21,6 +21,7 @@
 		</developer>
 	</developers>
 	<scm>
+		<connection>scm:svn:https://linglit68.linglit.tu-darmstadt.de/svn/annolab/tt4j/trunk</connection>
 		<developerConnection>scm:svn:https://linglit68.linglit.tu-darmstadt.de/svn/annolab/tt4j/trunk</developerConnection>
 	</scm>
 	<!-- Enabling the use of FTP -->
