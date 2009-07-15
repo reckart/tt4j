@@ -16,6 +16,44 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
+/**
+ * Main TreeTagger wrapper class. One TreeTagger process will be created and
+ * maintained for each instance of this class. The associated process will be
+ * terminated and restarted automatically if the model is changed
+ * (@link {@link #setModel(String)}). Otherwise the process remains running,
+ * in the background once it is started which saves a lot of time. The process
+ * remains dormant while not used and only consumes some memory, but no CPU
+ * while it is not used.
+ * <br/>
+ * During analysis, two threads are used to communicate with the TreeTagger.
+ * One process writes tokens to the TreeTagger process, while the other
+ * receives the analyzed tokens.
+ * <br/>
+ * For easy integration into application, this class takes any object containing
+ * token information and either uses its {@link Object#toString()} method or
+ * an {@link TokenAdapter} set using {@link #setAdapter(TokenAdapter)} to extract
+ * the actual token. To receive the an analyzed token, set a custom
+ * {@link TokenHandler} using {@link #setHandler(TokenHandler)}.
+ * <br/>
+ * Per default the TreeTagger executable is searched for in the directories
+ * indicated by the system propery {@literal treetagger.home}, the
+ * environment variables {@literal TREETAGGER_HOME} and {@literal TAGDIR}
+ * in this order. A full path to a model file optionally appended by a
+ * {@literal :} and the model encoding is expected by the {@link #setModel(String)}
+ * method.
+ * <br/>
+ * For additional flexibility, register a custom {@link ExecutableResolver}
+ * using {@link #setExecutableProvider(ExecutableResolver)} or a custom
+ * {@link ModelResolver} using {@link #setModelProvider(ModelResolver)}. Custom
+ * providers may extract models and executable from archives or download them
+ * from some location and temporarily or permanently install them in the file
+ * system. A custom model resolver may also be used to resolve a language code
+ * (e.g. {@literal en}) to a particular model.
+ *
+ * @author Richard Eckart de Castilho
+ *
+ * @param <O> the token type.
+ */
 public
 class TreeTaggerWrapper<O>
 {
@@ -26,8 +64,6 @@ class TreeTaggerWrapper<O>
     // (avoid to restart TreeTagger process each time)
     private static final String STARTOFTEXT = "<This-is-the-start-of-the-text />";
     private static final String ENDOFTEXT = "<This-is-the-end-of-the-text />";
-
-	public final static String PARAM_MODEL = "model";
 
 	private Model _model = null;
 
@@ -46,6 +82,11 @@ class TreeTaggerWrapper<O>
 		setPlatformDetector(new PlatformDetector());
 	}
 
+	/**
+	 * Set a custom model resolver.
+	 *
+	 * @param aModelProvider a model resolver.
+	 */
 	public
 	void setModelProvider(
 			final ModelResolver aModelProvider)
@@ -54,6 +95,11 @@ class TreeTaggerWrapper<O>
 		_modelResolver.setPlatformDetector(_platform);
 	}
 
+	/**
+	 * Set a custom executable resolver.
+	 *
+	 * @param aExeProvider a executable resolver.
+	 */
 	public
 	void setExecutableProvider(
 			final ExecutableResolver aExeProvider)
@@ -62,6 +108,11 @@ class TreeTaggerWrapper<O>
 		_exeResolver.setPlatformDetector(_platform);
 	}
 
+	/**
+	 * Set a {@link TokenHandler} to receive the analyzed tokens.
+	 *
+	 * @param aHandler a token handler.
+	 */
 	public
 	void setHandler(
 			final TokenHandler<O> aHandler)
@@ -69,6 +120,13 @@ class TreeTaggerWrapper<O>
 		_handler = aHandler;
 	}
 
+	/**
+	 * Set a {@link TokenAdapter} used to extract the token string from
+	 * a token objects passed to {@link #process(Collection)}. If no adapter
+	 * is set, the {@link Object#toString()} method is used.
+	 *
+	 * @param aAdapter the adapter.
+	 */
 	public
 	void setAdapter(
 			final TokenAdapter<O> aAdapter)
@@ -76,6 +134,12 @@ class TreeTaggerWrapper<O>
 		_adapter = aAdapter;
 	}
 
+	/**
+	 * Set platform information. Also sets the platform information in
+	 * the model resolver and the executable resolver.
+	 *
+	 * @param aPlatform the platform information.
+	 */
 	public
 	void setPlatformDetector(
 			final PlatformDetector aPlatform)
@@ -89,6 +153,11 @@ class TreeTaggerWrapper<O>
 		}
 	}
 
+	/**
+	 * Get platform information.
+	 *
+	 * @return the platform information.
+	 */
 	public
 	PlatformDetector getPlatformDetector()
 	{
@@ -99,7 +168,6 @@ class TreeTaggerWrapper<O>
 	 * Load the model with the given name.
 	 *
 	 * @param modelName the name of the model.
-	 * @return the model.
 	 * @throws IOException if the model can not be found.
 	 */
 	public
@@ -127,12 +195,20 @@ class TreeTaggerWrapper<O>
 		}
 	}
 
+	/**
+	 * Get the currently set model.
+	 *
+	 * @return the current model.
+	 */
 	public
 	Model getModel()
 	{
 		return _model;
 	}
 
+	/**
+	 * Stop the TreeTagger process and clean up the model and executable.
+	 */
 	public
 	void destroy()
 	{
@@ -159,6 +235,13 @@ class TreeTaggerWrapper<O>
 		super.finalize();
 	}
 
+	/**
+	 * Process the given list of token objects.
+	 *
+	 * @param aTokens the token objects.
+	 * @throws IOException if there is a problem providing the model or executable.
+	 * @throws TreeTaggerException if there is a problem communication with TreeTagger.
+	 */
 	public
 	void process(
 			final Collection<O> aTokens)

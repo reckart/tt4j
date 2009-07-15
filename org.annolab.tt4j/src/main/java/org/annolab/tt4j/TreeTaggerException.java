@@ -11,6 +11,11 @@ extends Exception
 {
 	private static final long serialVersionUID = -862590343816183238L;
 
+	/**
+	 * New exception.
+	 *
+	 * @param aMessage a message.
+	 */
 	public
 	TreeTaggerException(
 			final String aMessage)
@@ -18,6 +23,11 @@ extends Exception
 		super(aMessage);
 	}
 
+	/**
+	 * New exception.
+	 *
+	 * @param aCause a causing exception.
+	 */
 	public
 	TreeTaggerException(
 			final Throwable aCause)
@@ -25,6 +35,12 @@ extends Exception
 		super(aCause);
 	}
 
+	/**
+	 * New exception.
+	 *
+	 * @param aMessage a message.
+	 * @param aCause a causing exception.
+	 */
 	public
 	TreeTaggerException(
 			final String aMessage,

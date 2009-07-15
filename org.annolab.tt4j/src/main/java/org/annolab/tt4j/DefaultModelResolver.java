@@ -10,9 +10,9 @@ import static org.annolab.tt4j.Util.*;
 /**
  * Simple model provider. The model name is actually the path to the model.
  * The path has to be followed by a ":" and the name model encoding. Example
- * <code>/usr/lib/model.par:UTF-8</code>.
+ * {@code /usr/lib/model.par:UTF-8}.
  *
- * @author Richard Eckart
+ * @author Richard Eckart de Castilho
  */
 public
 class DefaultModelResolver
@@ -22,6 +22,13 @@ implements ModelResolver
 
 	protected List<String> _additionalPaths = new ArrayList<String>();
 
+	/**
+	 * Set additional paths that will be used for searching the TreeTagger
+	 * executable.
+	 *
+	 * @param aAdditionalPaths list of additional paths.
+	 * @see Util#getSearchPaths(List, String)
+	 */
 	public
 	void setAdditionalPaths(
 			final List<String> aAdditionalPaths)
@@ -30,6 +37,11 @@ implements ModelResolver
 		_additionalPaths.addAll(aAdditionalPaths);
 	}
 
+	/**
+	 * Get platform information.
+	 *
+	 * @return platform information.
+	 */
 	public
 	PlatformDetector getPlatformDetector()
 	{
