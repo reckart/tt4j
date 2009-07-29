@@ -4,13 +4,13 @@
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- * 
+ *
  * Contributors:
  *     Richard Eckart de Castilho - initial API and implementation
  ******************************************************************************/
 package org.annolab.tt4j;
 
-import static org.annolab.tt4j.Util.*;
+import static org.annolab.tt4j.Util.join;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -22,8 +22,11 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.Thread.State;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
@@ -102,10 +105,67 @@ class TreeTaggerWrapper<O>
 	private ModelResolver _modelResolver = null;
 	private ExecutableResolver _exeResolver = null;
 
+	private Double _epsilon = null;
+	private boolean _hyphenHeuristics = false;
+
+	private String[] _ttArgs = { "-quiet", "-no-unknown", "-sgml",
+			"-token", "-lemma" };
+
 	{
 		_modelResolver = new DefaultModelResolver();
 		_exeResolver = new DefaultExecutableResolver();
 		setPlatformDetector(new PlatformDetector());
+	}
+
+	/**
+	 * Set the arguments that are passed to the TreeTagger executable. A call
+	 * to this method will cause a running TreeTagger process to be shut down
+	 * and restarted with the new arguments.
+	 *
+	 * Using this method can cause TT4J to not work any longer. TTJ4 expects
+	 * that TreeTagger prints a set of line each containing three tokens
+	 * separated by spaces.
+	 *
+	 * @param aArgs the arguments.
+	 */
+	public
+	void setArguments(
+			String[] aArgs)
+	{
+		_ttArgs = aArgs;
+		stopTaggerProcess();
+	}
+
+	public
+	String[] getArguments() {
+		return _ttArgs;
+	}
+
+	/**
+	 * Set minimal tag frequency to {@code epsilon}
+	 *
+	 * @param aEpsilon epsilon
+	 */
+	public
+	void setEpsilon(
+			final Double aEpsilon)
+	{
+		_epsilon = aEpsilon;
+		stopTaggerProcess();
+	}
+
+	/**
+	 * Turn on the heuristics fur guessing the parts of speech of unknown
+	 * hyphenated words.
+	 *
+	 * @param hyphenHeuristics use hyphen heuristics.
+	 */
+	public
+	void setHyphenHeuristics(
+			boolean hyphenHeuristics)
+	{
+		_hyphenHeuristics = hyphenHeuristics;
+		stopTaggerProcess();
 	}
 
 	/**
@@ -340,18 +400,27 @@ class TreeTaggerWrapper<O>
     	if (_proc == null) {
         	_model.install();
 
-			final String commands[] = {
-					_exeResolver.getExecutable(),
-					"-quiet",
-					"-no-unknown",
-					"-sgml",
-					"-token",
-					"-lemma",
-					_model.getFile().getAbsolutePath() };
-			_procCmd = join(commands, " ");
-
 //			info("Starting treetagger: " + _procCmd);
-			final ProcessBuilder pb = new ProcessBuilder(commands);
+			List<String> cmd = new ArrayList<String>();
+			cmd.add(_exeResolver.getExecutable());
+			for (String arg : _ttArgs) {
+				cmd.add(arg);
+			}
+
+			if (_epsilon != null) {
+				cmd.add("-eps");
+				cmd.add(String.format(Locale.US, "%.12f", _epsilon));
+			}
+
+			if (_hyphenHeuristics) {
+				cmd.add("-hyphen-heuristics");
+			}
+
+			cmd.add(_model.getFile().getAbsolutePath());
+			_procCmd = join(cmd, " ");
+
+			final ProcessBuilder pb = new ProcessBuilder();
+			pb.command(cmd);
 			_proc = pb.start();
     	} else {
 //    		info("Re-using treetagger: " + _procCmd);

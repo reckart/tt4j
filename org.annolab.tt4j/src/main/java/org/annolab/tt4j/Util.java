@@ -4,7 +4,7 @@
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- * 
+ *
  * Contributors:
  *     Richard Eckart de Castilho - initial API and implementation
  ******************************************************************************/
@@ -15,6 +15,8 @@ import static java.io.File.separator;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -87,6 +89,32 @@ class Util
 		for (int i = 0; i < aStrings.length; i++) {
 			sb.append(aStrings[i]);
 			if (i < aStrings.length - 1) {
+				sb.append(aSeparator);
+			}
+		}
+
+		return sb.toString();
+	}
+
+    /**
+     * Join the given strings into a single string separated by the given
+     * separator.
+     *
+     * @param aStrings strings to join.
+     * @param aSeparator a separator.
+     * @return the joined string.
+     */
+    public static
+	String join(
+			final Collection<String> aStrings,
+			final String aSeparator)
+	{
+		final StringBuilder sb = new StringBuilder();
+
+		Iterator<String> i = aStrings.iterator();
+		while (i.hasNext()) {
+			sb.append(i.next());
+			if (i.hasNext()) {
 				sb.append(aSeparator);
 			}
 		}
