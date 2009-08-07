@@ -86,6 +86,8 @@ import java.util.regex.Pattern;
 public
 class TreeTaggerWrapper<O>
 {
+	public static boolean TRACE = false;
+
     private final static Pattern RE_TAB			= Pattern.compile("[\\t]");
     private final static Pattern RE_WHITESPACE	= Pattern.compile("[\\p{Zs}\\p{C}]");
 
@@ -111,10 +113,37 @@ class TreeTaggerWrapper<O>
 	private String[] _ttArgs = { "-quiet", "-no-unknown", "-sgml",
 			"-token", "-lemma" };
 
+	private int _numTokens = 0;
+	private int _tokensWritten = 0;
+	private O _lastTokenWritten;
+	private int _tokensRead = 0;
+	private O _lastTokenRead;
+	private String _lastTokenReadTT;
+
+	private boolean _performanceMode = false;
+
 	{
 		_modelResolver = new DefaultModelResolver();
 		_exeResolver = new DefaultExecutableResolver();
 		setPlatformDetector(new PlatformDetector());
+
+		if (!"false".equals(System.getProperty(getClass().getName()+".TRACE", "false"))) {
+			TRACE = true;;
+		}
+	}
+
+	/**
+	 * Disable some sanity checks, e.g. whether tokens contain line breaks
+	 * (which is not allowed). Turning this on will increase your performance,
+	 * but the wrapper may throw exceptions if illegal data is provided.
+	 *
+	 * @param performanceMode
+	 */
+	public
+	void setPerformanceMode(
+			boolean performanceMode)
+	{
+		_performanceMode = performanceMode;
 	}
 
 	/**
@@ -330,9 +359,68 @@ class TreeTaggerWrapper<O>
 	 */
 	public
 	void process(
-			final Collection<O> aTokens)
+			final Collection<O> aTokenList)
 	throws IOException, TreeTaggerException
 	{
+		// In normal more sort out all tokens that we cannot handle. In
+		// particular line breaks and tabs cannot be handled by TreeTagger.
+		Collection<O> aTokens;
+		if (!_performanceMode) {
+			aTokens = new ArrayList<O>(aTokenList.size());
+			Iterator<O> i = aTokenList.iterator();
+			boolean skipped = true;
+			String text = null;
+			skipToken: while (i.hasNext()) {
+				if (TRACE && skipped && text != null) {
+					System.err.println("["+TreeTaggerWrapper.this+
+							"|TRACE] Skipped illegal token ["+text+"]");
+				}
+
+				skipped = true;
+				O token = i.next();
+				text = getText(token);
+				if (text == null) {
+					continue;
+				}
+
+				boolean onlyWhitespace = true;
+				for (int n = 0; n < text.length(); n++) {
+					char c = text.charAt(n);
+					switch (c) {
+					case '\n':     continue skipToken; // Line break
+					case '\r':     continue skipToken; // Carriage return
+					case '\t':     continue skipToken; // Tab
+					case '\u200E': continue skipToken; // LEFT-TO-RIGHT MARK
+					case '\u200F': continue skipToken; // RIGHT-TO-LEFT MARK
+					case '\u2028': continue skipToken; // LINE SEPARATOR
+					case '\u2029': continue skipToken; // PARAGRAPH SEPARATOR
+					default:
+						if (onlyWhitespace) {
+							onlyWhitespace &= Character.isWhitespace(c);
+						}
+					}
+				}
+
+				if (onlyWhitespace) {
+					continue skipToken;
+				}
+
+				aTokens.add(token);
+				skipped = false;
+			}
+		}
+		else {
+			aTokens = aTokenList;
+		}
+
+		// Remember the number of tokens we originally got.
+		_numTokens = aTokens.size();
+		_tokensRead = 0;
+		_tokensWritten = 0;
+		_lastTokenRead = null;
+		_lastTokenReadTT = null;
+		_lastTokenWritten = null;
+
 		final Process taggerProc = getTaggerProcess();
 
 		// One thread reads the output.
@@ -454,6 +542,36 @@ class TreeTaggerWrapper<O>
 		}
 	}
 
+    public
+    String getStatus()
+    {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Last token read (#").append(_tokensRead).append("): ");
+		if (_lastTokenRead != null) {
+			sb.append("[").append(getText(_lastTokenRead)).append("]");
+			sb.append(" - (").append(_lastTokenReadTT+")");
+		}
+		else {
+			sb.append("none");
+		}
+		sb.append("\n");
+
+		sb.append("Last token written (#").append(_tokensWritten).append("): ");
+		if (_lastTokenWritten != null) {
+			sb.append("[").append(getText(_lastTokenWritten)).append("]");
+		}
+		else {
+			sb.append("none");
+		}
+		sb.append("\n");
+
+		sb.append("Tokens originally recieved: ").append(_numTokens).append("\n");
+		sb.append("Tokens written            : ").append(_tokensWritten).append("\n");
+		sb.append("Tokens read               : ").append(_tokensRead).append("\n");
+
+		return sb.toString();
+    }
+
     private
     class StreamGobbler
     implements Runnable
@@ -540,17 +658,35 @@ class TreeTaggerWrapper<O>
 
 	    			if (inText) {
 	    				// Get word and tag
-	    				String fields[] = RE_TAB.split(s, 2);
-	    				final String tags  = fields[1];
-	    				fields = RE_WHITESPACE.split(tags, 3);
+	    				String fields1[] = RE_TAB.split(s, 2);
+	    				final String tags  = fields1[1];
+	    				String fields2[] = RE_WHITESPACE.split(tags, 3);
 
 	    				// Get original token segment
-	    				if (_handler != null) {
-	    					_handler.token(
-	    							tokenIterator.next(),
-	    							fields[0].trim().intern(),
-	    							fields[1].trim());
+    					if (tokenIterator.hasNext()) {
+	    					O token = tokenIterator.next();
+	    					_tokensRead++;
+	    					_lastTokenRead = token;
+	    					_lastTokenReadTT = s;
+    						if (TRACE) {
+    							System.err.println("["+TreeTaggerWrapper.this+
+    									"|TRACE] ("+_tokensRead+") IN ["+
+    									getText(token)+"] -- OUT: ["+s+"]");
+    						}
+
+		    				if (_handler != null) {
+		    					_handler.token(
+		    							token,
+		    							fields2[0].trim().intern(),
+		    							fields2[1].trim());
+	    					}
 	    				}
+    					else {
+							throw new IllegalStateException(
+									"["+TreeTaggerWrapper.this+"] Have not seen ENDOFTEXT-marker but no more "+
+    								"tokens are available.\n"+
+    								"TT returned: ["+s+"]\n"+getStatus());
+    					}
 	    			}
 	    		}
     		}
@@ -592,7 +728,10 @@ class TreeTaggerWrapper<O>
     			send(STARTOFTEXT);
 
     			while (tokenIterator.hasNext()) {
-    				send(getText(tokenIterator.next()));
+    				O token = tokenIterator.next();
+    				send(getText(token));
+    				_lastTokenWritten = token;
+    				_tokensWritten++;
     			}
 
     			send(ENDOFTEXT);
