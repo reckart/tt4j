@@ -119,6 +119,7 @@ class TreeTaggerWrapper<O>
 	private int _tokensRead = 0;
 	private O _lastTokenRead;
 	private String _lastTokenReadTT;
+	private int _restartCount = 0;
 
 	private boolean _performanceMode = false;
 
@@ -510,6 +511,7 @@ class TreeTaggerWrapper<O>
 			final ProcessBuilder pb = new ProcessBuilder();
 			pb.command(cmd);
 			_proc = pb.start();
+			_restartCount++;
     	} else {
 //    		info("Re-using treetagger: " + _procCmd);
     	}
@@ -571,6 +573,17 @@ class TreeTaggerWrapper<O>
 
 		return sb.toString();
     }
+
+    /**
+     * Get the number of times a TreeTagger process was started.
+     *
+     * @return the number of times a TreeTagger process was started.
+     */
+    public
+    int getRestartCount()
+	{
+		return _restartCount;
+	}
 
     private
     class StreamGobbler

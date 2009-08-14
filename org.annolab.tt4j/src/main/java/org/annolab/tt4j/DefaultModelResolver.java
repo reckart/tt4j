@@ -4,7 +4,7 @@
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- * 
+ *
  * Contributors:
  *     Richard Eckart de Castilho - initial API and implementation
  ******************************************************************************/
@@ -63,78 +63,47 @@ implements ModelResolver
 			final String aModelName)
 	throws IOException
 	{
-		return new Model() {
-			private final String _encoding;
-			private File _file;
-			private final String _name;
-			{
-				_name = aModelName;
-				final String[] fields = aModelName.split(":");
+		final String _encoding;
+		final String _name;
 
-				// The using the name as path
-				_encoding =  (fields.length > 1) ? fields[1] : "UTF-8";
+		_name = aModelName;
+		final String[] fields = aModelName.split(":");
 
-				if (new File(fields[0]).exists()) {
-					_file = new File(fields[0]);
+		// The using the name as path
+		_encoding =  (fields.length > 1) ? fields[1] : "UTF-8";
 
+		return getModel(aModelName, _name, _encoding);
+	}
+
+	public
+	Model getModel(
+			final String aModelName,
+			final String aLocation,
+			final String aEncoding)
+	throws IOException
+	{
+		File _file = new File(aLocation);
+
+		if (!_file.exists()) {
+			boolean found = false;
+			for (final String p : getSearchPaths(_additionalPaths, "models")) {
+				if (p == null) {
+					continue;
 				}
-				else {
-					boolean found = false;
-					for (final String p : getSearchPaths(_additionalPaths, "models")) {
-						if (p == null) {
-							continue;
-						}
 
-						_file = new File(p+separator+fields[0]);
-						if (_file.exists()) {
-							found = true;
-							break;
-						}
-					}
-
-					if (!found) {
-						throw new IOException("Unable to locate model ["+fields[0]+"]");
-					}
+				_file = new File(p+separator+aLocation);
+				if (_file.exists()) {
+					found = true;
+					break;
 				}
 			}
 
-			public
-			String getName()
-			{
-				return _name;
+			if (!found) {
+				throw new IOException("Unable to locate model ["+aLocation+"]");
 			}
+		}
 
-			public
-			void destroy()
-			{
-				// Do nothing
-			}
-
-			public
-			String getEncoding()
-			{
-				return _encoding;
-			}
-
-			public
-			File getFile() {
-				return _file;
-			}
-
-			public
-			String getFlushSequence()
-			{
-				return ".\n.\n.\n.\n";
-			}
-
-			public
-			void install()
-			throws IOException
-			{
-				// Do nothing.
-			}
-
-		};
+		return new DefaultModel(aModelName, _file, aEncoding);
 	}
 
 	public
