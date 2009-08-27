@@ -129,7 +129,7 @@ class TreeTaggerWrapper<O>
 		setPlatformDetector(new PlatformDetector());
 
 		if (!"false".equals(System.getProperty(getClass().getName()+".TRACE", "false"))) {
-			TRACE = true;;
+			TRACE = true;
 		}
 	}
 
@@ -367,48 +367,7 @@ class TreeTaggerWrapper<O>
 		// particular line breaks and tabs cannot be handled by TreeTagger.
 		Collection<O> aTokens;
 		if (!_performanceMode) {
-			aTokens = new ArrayList<O>(aTokenList.size());
-			Iterator<O> i = aTokenList.iterator();
-			boolean skipped = true;
-			String text = null;
-			skipToken: while (i.hasNext()) {
-				if (TRACE && skipped && text != null) {
-					System.err.println("["+TreeTaggerWrapper.this+
-							"|TRACE] Skipped illegal token ["+text+"]");
-				}
-
-				skipped = true;
-				O token = i.next();
-				text = getText(token);
-				if (text == null) {
-					continue;
-				}
-
-				boolean onlyWhitespace = true;
-				for (int n = 0; n < text.length(); n++) {
-					char c = text.charAt(n);
-					switch (c) {
-					case '\n':     continue skipToken; // Line break
-					case '\r':     continue skipToken; // Carriage return
-					case '\t':     continue skipToken; // Tab
-					case '\u200E': continue skipToken; // LEFT-TO-RIGHT MARK
-					case '\u200F': continue skipToken; // RIGHT-TO-LEFT MARK
-					case '\u2028': continue skipToken; // LINE SEPARATOR
-					case '\u2029': continue skipToken; // PARAGRAPH SEPARATOR
-					default:
-						if (onlyWhitespace) {
-							onlyWhitespace &= Character.isWhitespace(c);
-						}
-					}
-				}
-
-				if (onlyWhitespace) {
-					continue skipToken;
-				}
-
-				aTokens.add(token);
-				skipped = false;
-			}
+			aTokens = removeProblematicTokens(aTokenList);
 		}
 		else {
 			aTokens = aTokenList;
@@ -442,38 +401,93 @@ class TreeTaggerWrapper<O>
 		// exception has been thrown. When the Reader thread is complete, we can
 		// stop.
 		try {
-			while (true) {
-				// If the reader or writer fail, we kill the treetagger and bail
-				// out. This may be a bit harsh, but easier than coding the
-				// Reader and Writer so that we can abort them. If the process
-				// is dead, the streams die and then the threads will also die
-				// with an IOException.
-				if (writer.getException() != null) {
-					taggerProc.destroy();
-					throw new TreeTaggerException(writer.getException());
-				}
-
-				if (reader.getException() != null) {
-					taggerProc.destroy();
-					throw new TreeTaggerException(reader.getException());
-				}
-
-				// Otherwise we wait for the Reader thread to end.
-				if (readerThread.getState() == State.TERMINATED) {
-					break;
-				}
-
-				Thread.sleep(100);
+			// If the reader or writer fail, we kill the treetagger and bail
+			// out. This may be a bit harsh, but easier than coding the
+			// Reader and Writer so that we can abort them. If the process
+			// is dead, the streams die and then the threads will also die
+			// with an IOException.
+			if (writer.getException() != null) {
+				taggerProc.destroy();
+				throw new TreeTaggerException(writer.getException());
 			}
-		}
-		catch (final InterruptedException e) {
-			// Ignore
+
+			if (reader.getException() != null) {
+				taggerProc.destroy();
+				throw new TreeTaggerException(reader.getException());
+			}
+
+			// Wait for the Reader thread to end.
+			synchronized (reader) {
+				while (readerThread.getState() != State.TERMINATED) {
+					try {
+						reader.wait(20);
+					}
+					catch (final InterruptedException e) {
+						// Ignore
+					}
+				}
+			}
 		}
 		finally {
 			gob.done();
 		}
 
 //		info("Parsed " + count + " pos segments");
+	}
+
+	/**
+	 *
+	 *
+	 * @param aTokenList
+	 * @return
+	 */
+	protected
+	Collection<O> removeProblematicTokens(
+			Collection<O> aTokenList)
+	{
+		Collection<O> filtered = new ArrayList<O>(aTokenList.size());
+		Iterator<O> i = aTokenList.iterator();
+		boolean skipped = true;
+		String text = null;
+		skipToken: while (i.hasNext()) {
+			if (TRACE && skipped && text != null) {
+				System.err.println("["+TreeTaggerWrapper.this+
+						"|TRACE] Skipping illegal token ["+text+"]");
+			}
+
+			skipped = true;
+			O token = i.next();
+			text = getText(token);
+			if (text == null) {
+				continue;
+			}
+
+			boolean onlyWhitespace = true;
+			for (int n = 0; n < text.length(); n++) {
+				char c = text.charAt(n);
+				switch (c) {
+				case '\n':     continue skipToken; // Line break
+				case '\r':     continue skipToken; // Carriage return
+				case '\t':     continue skipToken; // Tab
+				case '\u200E': continue skipToken; // LEFT-TO-RIGHT MARK
+				case '\u200F': continue skipToken; // RIGHT-TO-LEFT MARK
+				case '\u2028': continue skipToken; // LINE SEPARATOR
+				case '\u2029': continue skipToken; // PARAGRAPH SEPARATOR
+				default:
+					if (onlyWhitespace) {
+						onlyWhitespace &= Character.isWhitespace(c);
+					}
+				}
+			}
+
+			if (onlyWhitespace) {
+				continue skipToken;
+			}
+
+			filtered.add(token);
+			skipped = false;
+		}
+		return filtered;
 	}
 
 	/**
@@ -671,9 +685,22 @@ class TreeTaggerWrapper<O>
 
 	    			if (inText) {
 	    				// Get word and tag
+	    				String posTag = null;
+	    				String lemma  = null;
+
+	    				// Sometimes TT seems to return odd lines, e.g.
+	    				// containing only a tag but no token and no lemma.
+	    				// For such cases we only return the original token
+	    				// we got, but lemma and pos will be null.
 	    				String fields1[] = RE_TAB.split(s, 2);
-	    				final String tags  = fields1[1];
-	    				String fields2[] = RE_WHITESPACE.split(tags, 3);
+	    				if (fields1.length == 2) {
+		    				final String tags  = fields1[1];
+		    				String fields2[] = RE_WHITESPACE.split(tags, 3);
+		    				if (fields2.length >= 2) {
+			    				posTag = fields2[0].trim().intern();
+			    				lemma  = fields2[1].trim();
+		    				}
+	    				}
 
 	    				// Get original token segment
     					if (tokenIterator.hasNext()) {
@@ -684,14 +711,13 @@ class TreeTaggerWrapper<O>
     						if (TRACE) {
     							System.err.println("["+TreeTaggerWrapper.this+
     									"|TRACE] ("+_tokensRead+") IN ["+
-    									getText(token)+"] -- OUT: ["+s+"]");
+    									getText(token)+"] -- OUT: ["+s+
+    									"] -- POS: ["+posTag+"] -- LEMMA: ["+
+    									lemma+"]");
     						}
 
 		    				if (_handler != null) {
-		    					_handler.token(
-		    							token,
-		    							fields2[0].trim().intern(),
-		    							fields2[1].trim());
+								_handler.token(token, posTag, lemma);
 	    					}
 	    				}
     					else {
@@ -706,6 +732,10 @@ class TreeTaggerWrapper<O>
     		catch (final Exception e) {
     			_exception = e;
     		}
+
+    		synchronized (this) {
+        		notifyAll();
+			}
     	}
 
     	public
