@@ -407,12 +407,12 @@ class TreeTaggerWrapper<O>
 			// is dead, the streams die and then the threads will also die
 			// with an IOException.
 			if (writer.getException() != null) {
-				taggerProc.destroy();
+				destroy();
 				throw new TreeTaggerException(writer.getException());
 			}
 
 			if (reader.getException() != null) {
-				taggerProc.destroy();
+				destroy();
 				throw new TreeTaggerException(reader.getException());
 			}
 
@@ -676,10 +676,18 @@ class TreeTaggerWrapper<O>
 
 	    			if (STARTOFTEXT.equals(s)) {
 	    				inText = true;
+						if (TRACE) {
+							System.err.println("["+TreeTaggerWrapper.this+
+									"|TRACE] ("+_tokensRead+") START ["+s+"]");
+						}
 	    				continue;
 	    			}
 
 	    			if (ENDOFTEXT.equals(s)) {
+						if (TRACE) {
+							System.err.println("["+TreeTaggerWrapper.this+
+									"|TRACE] ("+_tokensRead+") COMPLETE ["+s+"]");
+						}
 	    				break;
 	    			}
 
@@ -778,7 +786,7 @@ class TreeTaggerWrapper<O>
     			}
 
     			send(ENDOFTEXT);
-				send("\n.\n"+_model.getFlushSequence()+"\n\n");
+				send("\n.\n"+_model.getFlushSequence()+".\n.\n.\n.\n");
     		}
     		catch (final Exception e) {
     			_exception = e;
