@@ -1,0 +1,16 @@
+ -----
+ Title
+ -----
+ Author
+ -----
+ Date
+ -----
+
+~~ http://maven.apache.org/doxia/references/apt-format.html
+
+Downloads
+
+ The latest version of <TreeTagger for Java> is available in the AnnoLab
+ Maven repository:
+ 
+ {{{http://annolab.org/m2/releases/org/annolab/tt4j/org.annolab.tt4j/}http://annolab.org/m2/releases/org/annolab/tt4j/org.annolab.tt4j/}}
