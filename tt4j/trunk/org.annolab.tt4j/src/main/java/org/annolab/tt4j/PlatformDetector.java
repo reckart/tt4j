@@ -4,7 +4,7 @@
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- * 
+ *
  * Contributors:
  *     Richard Eckart de Castilho - initial API and implementation
  ******************************************************************************/
@@ -20,6 +20,16 @@ import java.nio.ByteOrder;
 public
 class PlatformDetector
 {
+	public static String OS_WINDOWS   = "windows";
+	public static String OS_OSX       = "osx";
+	public static String OS_SOLARIS   = "solaris";
+	public static String OS_LINUX     = "solaris";
+
+	public static String ARCH_PPC     = "ppc";
+	public static String ARCH_X86_32  = "x86_32";
+	public static String ARCH_X86_64  = "x86_64";
+	public static String ARCH_SPARC   = "sparc";
+
 	private String _arch = "";
 	private String _os = "";
 	private String _executableSuffix = "";
@@ -158,26 +168,31 @@ class PlatformDetector
     			_arch.equals("i586") ||
     			_arch.equals("i686")
     	) {
-    		_arch = "x86_32";
+    		_arch = ARCH_X86_32;
+    	}
+    	if (
+    			_arch.equals("amd64")
+    	) {
+    		_arch = ARCH_X86_64;
     	}
     	if (_arch.equals("powerpc")) {
-    		_arch = "ppc";
+    		_arch = ARCH_PPC;
     	}
 
     	// Resolve name "synonyms"
     	if (_os.startsWith("windows")) {
-    		_os = "windows";
+    		_os = OS_WINDOWS;
     		_executableSuffix = ".exe";
     		chmod  = null;
     	}
     	if (_os.startsWith("mac")) {
-    		_os = "osx";
+    		_os = OS_OSX;
     	}
     	if (_os.startsWith("linux")) {
-    		_os = "linux";
+    		_os = OS_LINUX;
     	}
     	if (_os.startsWith("sun")) {
-    		_os = "solaris";
+    		_os = OS_SOLARIS;
     	}
 
     	_chmodCmd = chmod;
