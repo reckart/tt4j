@@ -32,6 +32,9 @@ implements ModelResolver
 
 	protected List<String> _additionalPaths = new ArrayList<String>();
 
+	// This is for debug purposes only!
+	boolean _checkExistence = true;
+
 	/**
 	 * Set additional paths that will be used for searching the TreeTagger
 	 * executable.
@@ -66,11 +69,27 @@ implements ModelResolver
 		final String _encoding;
 		final String _name;
 
-		_name = aModelName;
-		final String[] fields = aModelName.split(":");
+		int lastColon = aModelName.lastIndexOf(':');
+		// On Windows we can have paths like "C:\model.par". Checking this by
+		// testing if the char following the colon is a slash or backslash. The
+		// encoding should definitely not start with one of these. Should also
+		// catch URLs.
+		if (aModelName.length() > (lastColon+1)) {
+			char ch = aModelName.charAt(lastColon+1);
+			if (ch == '/' || ch == '\\') {
+				lastColon = -1;
+			}
 
-		// The using the name as path
-		_encoding =  (fields.length > 1) ? fields[1] : "UTF-8";
+			_encoding =  (lastColon != -1) ? aModelName.substring(lastColon+1) : "UTF-8";
+			// The using the name as path
+			_name = (lastColon != -1) ? aModelName.substring(0, lastColon) : aModelName;
+		}
+		else {
+			_encoding = "UTF-8";
+			// The using the name as path
+			// Nothing is following the final colon, so we truncate it.
+			_name = aModelName.substring(0, aModelName.length()-1);
+		}
 
 		return getModel(aModelName, _name, _encoding);
 	}
@@ -84,7 +103,7 @@ implements ModelResolver
 	{
 		File _file = new File(aLocation);
 
-		if (!_file.exists()) {
+		if (_checkExistence && !_file.exists()) {
 			boolean found = false;
 			for (final String p : getSearchPaths(_additionalPaths, "models")) {
 				if (p == null) {
