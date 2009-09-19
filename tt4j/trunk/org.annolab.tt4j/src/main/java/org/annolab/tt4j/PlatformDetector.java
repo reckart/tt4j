@@ -23,7 +23,7 @@ class PlatformDetector
 	public static String OS_WINDOWS   = "windows";
 	public static String OS_OSX       = "osx";
 	public static String OS_SOLARIS   = "solaris";
-	public static String OS_LINUX     = "solaris";
+	public static String OS_LINUX     = "linux";
 
 	public static String ARCH_PPC     = "ppc";
 	public static String ARCH_X86_32  = "x86_32";
