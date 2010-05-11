@@ -23,11 +23,11 @@ TreeTagger for Java (TT4J)
  try {
      tt.setModel("/treetagger/models/english.par:iso8859-1");
      tt.setHandler(new TokenHandler<String>() {
-         void token(String token, String pos, String lemma) {
+         public void token(String token, String pos, String lemma) {
              System.out.println(token+"\t"+pos+"\t"+lemma);
          }
      });
-     tt.process(asList(new String[] {"This", "is", "a", "test", "."}));
+     tt.process(Arrays.asList(new String[] {"This", "is", "a", "test", "."}));
  }
  finally {
      tt.destroy();
