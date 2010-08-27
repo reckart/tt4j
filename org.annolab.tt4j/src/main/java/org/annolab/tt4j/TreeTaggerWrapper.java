@@ -401,25 +401,25 @@ class TreeTaggerWrapper<O>
 		// exception has been thrown. When the Reader thread is complete, we can
 		// stop.
 		try {
-			// If the reader or writer fail, we kill the treetagger and bail
-			// out. This may be a bit harsh, but easier than coding the
-			// Reader and Writer so that we can abort them. If the process
-			// is dead, the streams die and then the threads will also die
-			// with an IOException.
-			if (writer.getException() != null) {
-				destroy();
-				throw new TreeTaggerException(writer.getException());
-			}
-
-			if (reader.getException() != null) {
-				destroy();
-				throw new TreeTaggerException(reader.getException());
-			}
-
 			// Wait for the Reader thread to end.
 			synchronized (reader) {
 				while (readerThread.getState() != State.TERMINATED) {
 					try {
+						// If the reader or writer fail, we kill the treetagger and bail
+						// out. This may be a bit harsh, but easier than coding the
+						// Reader and Writer so that we can abort them. If the process
+						// is dead, the streams die and then the threads will also die
+						// with an IOException.
+						if (writer.getException() != null) {
+							destroy();
+							throw new TreeTaggerException(writer.getException());
+						}
+
+						if (reader.getException() != null) {
+							destroy();
+							throw new TreeTaggerException(reader.getException());
+						}
+
 						reader.wait(20);
 					}
 					catch (final InterruptedException e) {
