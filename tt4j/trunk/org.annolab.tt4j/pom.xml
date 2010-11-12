@@ -3,7 +3,7 @@
 	<groupId>org.annolab.tt4j</groupId>
 	<artifactId>org.annolab.tt4j</artifactId>
 	<name>TreeTagger for Java</name>
-	<version>1.0.14-SNAPSHOT</version>
+	<version>1.0.14</version>
 	<licenses>
 		<license>
 			<name>LGPL</name>
@@ -21,8 +21,8 @@
 		</developer>
 	</developers>
 	<scm>
-		<connection>scm:svn:http://tt4j.googlecode.com/svn/tt4j/trunk/org.annolab.tt4j</connection>
-		<developerConnection>scm:svn:https://tt4j.googlecode.com/svn/tt4j/trunk/org.annolab.tt4j</developerConnection>
+		<connection>scm:svn:http://tt4j.googlecode.com/svn/tt4j/tags/org.annolab.tt4j-1.0.14</connection>
+		<developerConnection>scm:svn:https://tt4j.googlecode.com/svn/tt4j/tags/org.annolab.tt4j-1.0.14</developerConnection>
 	</scm>
 	<!-- Enabling the use of FTP -->
   	<distributionManagement>
