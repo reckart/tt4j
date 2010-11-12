@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009 Richard Eckart de Castilho.
+ * Copyright (c) 2009-2010 Richard Eckart de Castilho.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
@@ -21,12 +21,11 @@ public
 interface TokenHandler<O>
 {
 	/**
-	 * Processs a token that TreeTagger has analyzed.
+	 * Process a token that TreeTagger has analyzed.
 	 *
 	 * @param token the one of the token objects passed to
 	 *     {@link TreeTaggerWrapper#process(java.util.Collection)}
-	 * @param pos the Part-of-Speech tag as produced by TreeTagger or 
-              <code>null</code>.
+	 * @param pos the Part-of-Speech tag as produced by TreeTagger or <code>null</code>.
 	 * @param lemma the lemma as produced by TreeTagger or <code>null</code>.
 	 */
 	void token(
