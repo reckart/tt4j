@@ -1,0 +1,78 @@
+ -----
+ Title
+ -----
+ Author
+ -----
+ Date
+ -----
+
+~~ http://maven.apache.org/doxia/references/apt-format.html
+
+Changes
+
+*1.0.14
+
+  * Generate a better exception message when no model or executable could be found.
+  
+  * Provide getters for all properties of TreeTaggerWrapper.
+  
+  * Updated license header and added it where missing.
+  
+  * Fixed typo in Javadoc.
+  
+  * Set plugin versions in POM to make Maven 3 happy.
+  
+  * Set source encoding to UTF-8 in POM.
+
+*1.0.13
+
+  * Fixed issue 1: Exceptions in reader and writer threads may go undetected
+  
+  * Moved to Google Code
+
+*1.0.12 (2009-09-19)
+
+  * Fixed regression: Linux accidentially detected as Solaris.
+ 
+*1.0.11 (2009-09-18)
+
+  * Fixed bug: DefaultModelResolver uses wrong file name.
+  
+  * Fixed bug: DefaultModelResolver fails on Windows when path contains a colon.
+ 
+* 1.0.10 (2009-09-28)
+
+  * Fixed bug: Resource not properly destroyed when an exception is thrown in 
+    reader/writer thread.
+    
+  * Improvement: Try harder to get to end-of-text mark.
+  
+  * Improvement: Added tracing of start and end marks.
+   
+* 1.0.9 (2009-08-27)
+
+  * Improvement: Massively improved throughput when processing a large number of
+    documents.
+  
+  * Improvement: Try to gracefully handle cases where TT does not produce a 
+    "<token> <tag> <lemma>" line. Return null for tag and lemma in these cases.
+
+* 1.0.8 (2009-08-14)
+
+  * Improvement: Ease integration of custom model resolvers.
+  
+* 1.0.7 (2009-08-07)
+
+  * Improvement: Added tracing.
+  
+  * Improvement: Improved robustness ignoring illegal tokens (e.g. containing 
+    tabs or line breaks).
+
+  * Improvement: Added performance mode which does not check for illegal tokens.
+  
+* 1.0.6 (2009-08-03)
+
+  * Improvement: Allow setting the parameters <-eps> and <-hyphen-heuristics> 
+    needed to use TT4J with chunker models. Now a chunker can be build on top 
+    of TT4J.
+  
