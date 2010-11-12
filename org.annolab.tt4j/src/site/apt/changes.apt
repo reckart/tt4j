@@ -10,6 +10,26 @@
 
 Changes
 
+*1.0.14
+
+  * Generate a better exception message when no model or executable could be found.
+  
+  * Provide getters for all properties of TreeTaggerWrapper.
+  
+  * Updated license header and added it where missing.
+  
+  * Fixed typo in Javadoc.
+  
+  * Set plugin versions in POM to make Maven 3 happy.
+  
+  * Set source encoding to UTF-8 in POM.
+
+*1.0.13
+
+  * Fixed issue 1: Exceptions in reader and writer threads may go undetected
+  
+  * Moved to Google Code
+
 *1.0.12 (2009-09-19)
 
   * Fixed regression: Linux accidentially detected as Solaris.
