@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009 Richard Eckart de Castilho.
+ * Copyright (c) 2009-2010 Richard Eckart de Castilho.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
@@ -13,7 +13,10 @@ package org.annolab.tt4j;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import static java.io.File.separator;
 import static org.annolab.tt4j.Util.*;
 
@@ -105,12 +108,14 @@ implements ModelResolver
 
 		if (_checkExistence && !_file.exists()) {
 			boolean found = false;
+			Set<String> searchedIn = new HashSet<String>();
 			for (final String p : getSearchPaths(_additionalPaths, "models")) {
 				if (p == null) {
 					continue;
 				}
 
 				_file = new File(p+separator+aLocation);
+				searchedIn.add(_file.getAbsolutePath());
 				if (_file.exists()) {
 					found = true;
 					break;
@@ -118,7 +123,10 @@ implements ModelResolver
 			}
 
 			if (!found) {
-				throw new IOException("Unable to locate model ["+aLocation+"]");
+				throw new IOException("Unable to locate model ["+aLocation+"] in the following " +
+						"locations "+searchedIn+".  Make sure the environment variable " +
+						"'TREETAGGER_HOME' or 'TAGDIR' or the system property 'treetagger.home' " +
+						"point to the TreeTagger installation directory.");
 			}
 		}
 

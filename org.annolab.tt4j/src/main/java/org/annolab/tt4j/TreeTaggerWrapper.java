@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009 Richard Eckart de Castilho.
+ * Copyright (c) 2009-2010 Richard Eckart de Castilho.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
@@ -138,13 +138,24 @@ class TreeTaggerWrapper<O>
 	 * (which is not allowed). Turning this on will increase your performance,
 	 * but the wrapper may throw exceptions if illegal data is provided.
 	 *
-	 * @param performanceMode
+	 * @param performanceMode on/off.
 	 */
 	public
 	void setPerformanceMode(
 			boolean performanceMode)
 	{
 		_performanceMode = performanceMode;
+	}
+
+	/**
+	 * Get performance mode state.
+	 *
+	 * @return performance mode state.
+	 */
+	public
+	boolean getPerformanceMode()
+	{
+		return _performanceMode;
 	}
 
 	/**
@@ -174,7 +185,7 @@ class TreeTaggerWrapper<O>
 	/**
 	 * Set minimal tag frequency to {@code epsilon}
 	 *
-	 * @param aEpsilon epsilon
+	 * @param aEpsilon epsilon.
 	 */
 	public
 	void setEpsilon(
@@ -185,8 +196,18 @@ class TreeTaggerWrapper<O>
 	}
 
 	/**
-	 * Turn on the heuristics fur guessing the parts of speech of unknown
-	 * hyphenated words.
+	 * Get minimal tag frequency.
+	 *
+	 * @return epsilon.
+	 */
+	public
+	Double getEpsilon()
+	{
+		return _epsilon;
+	}
+
+	/**
+	 * Turn on the heuristics fur guessing the parts of speech of unknown hyphenated words.
 	 *
 	 * @param hyphenHeuristics use hyphen heuristics.
 	 */
@@ -196,6 +217,17 @@ class TreeTaggerWrapper<O>
 	{
 		_hyphenHeuristics = hyphenHeuristics;
 		stopTaggerProcess();
+	}
+
+	/**
+	 * Get hyphen heuristics mode setting.
+	 *
+	 * @return whether to use hyphen heuristics
+	 */
+	public
+	boolean getHyphenHeuristics()
+	{
+		return _hyphenHeuristics;
 	}
 
 	/**
@@ -212,6 +244,16 @@ class TreeTaggerWrapper<O>
 	}
 
 	/**
+	 * Get the current model resolver.
+	 *
+	 * @param aModelProvider a model resolver.
+	 */
+	public ModelResolver getModelResolver()
+	{
+		return _modelResolver;
+	}
+
+	/**
 	 * Set a custom executable resolver.
 	 *
 	 * @param aExeProvider a executable resolver.
@@ -222,6 +264,17 @@ class TreeTaggerWrapper<O>
 	{
 		_exeResolver = aExeProvider;
 		_exeResolver.setPlatformDetector(_platform);
+	}
+
+	/**
+	 * Get the current executable resolver.
+	 *
+	 * @return the current executable resolver.
+	 */
+	public
+	ExecutableResolver getExecutableProvider()
+	{
+		return _exeResolver;
 	}
 
 	/**
@@ -237,6 +290,17 @@ class TreeTaggerWrapper<O>
 	}
 
 	/**
+	 * Get the current token handler.
+	 *
+	 * @return current token handler.
+	 */
+	public
+	TokenHandler<O> getHandler()
+	{
+		return _handler;
+	}
+
+	/**
 	 * Set a {@link TokenAdapter} used to extract the token string from
 	 * a token objects passed to {@link #process(Collection)}. If no adapter
 	 * is set, the {@link Object#toString()} method is used.
@@ -248,6 +312,17 @@ class TreeTaggerWrapper<O>
 			final TokenAdapter<O> aAdapter)
 	{
 		_adapter = aAdapter;
+	}
+
+	/**
+	 * Get the current token adapter.
+	 *
+	 * @return the current token adapter.
+	 */
+	public
+	TokenAdapter<O> getAdapter()
+	{
+		return _adapter;
 	}
 
 	/**
