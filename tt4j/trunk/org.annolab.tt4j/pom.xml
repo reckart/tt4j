@@ -3,7 +3,7 @@
 	<groupId>org.annolab.tt4j</groupId>
 	<artifactId>org.annolab.tt4j</artifactId>
 	<name>TreeTagger for Java</name>
-	<version>1.0.15-SNAPSHOT</version>
+	<version>1.0.14-SNAPSHOT</version>
 	<licenses>
 		<license>
 			<name>LGPL</name>
