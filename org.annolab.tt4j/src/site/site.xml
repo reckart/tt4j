@@ -2,6 +2,9 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
     <body>
+	    <head>
+	    	<meta http-equiv="REFRESH" content="0; url=http://code.google.com/p/tt4j/"></meta>
+	    </head>
         <menu name="Overview">
             <item name="Introduction" href="index.html"/>
             <item name="Usage" href="usage.html"/>
