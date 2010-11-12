@@ -21,8 +21,8 @@
 		</developer>
 	</developers>
 	<scm>
-		<connection>scm:svn:http://tt4j.googlecode.com/svn/tt4j/trunk/</connection>
-		<developerConnection>scm:svn:https://tt4j.googlecode.com/svn/tt4j/trunk/</developerConnection>
+		<connection>scm:svn:http://tt4j.googlecode.com/svn/tt4j/trunk/org.annolab.tt4j</connection>
+		<developerConnection>scm:svn:https://tt4j.googlecode.com/svn/tt4j/trunk/org.annolab.tt4j</developerConnection>
 	</scm>
 	<!-- Enabling the use of FTP -->
   	<distributionManagement>
