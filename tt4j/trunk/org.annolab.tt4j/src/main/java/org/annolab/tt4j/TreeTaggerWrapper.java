@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
  * {@link TokenHandler} using {@link #setHandler(TokenHandler)}.
  * <p>
  * Per default the TreeTagger executable is searched for in the directories
- * indicated by the system propery {@literal treetagger.home}, the
+ * indicated by the system property {@literal treetagger.home}, the
  * environment variables {@literal TREETAGGER_HOME} and {@literal TAGDIR}
  * in this order. A full path to a model file optionally appended by a
  * {@literal :} and the model encoding is expected by the {@link #setModel(String)}
@@ -110,18 +110,19 @@ class TreeTaggerWrapper<O>
 	private Double _epsilon = null;
 	private boolean _hyphenHeuristics = false;
 
-	private String[] _ttArgs = { "-quiet", "-no-unknown", "-sgml",
-			"-token", "-lemma" };
+	private String[] _ttArgs = { "-quiet", "-no-unknown", "-sgml", "-token", "-lemma" };
 
 	private int _numTokens = 0;
 	private int _tokensWritten = 0;
 	private O _lastTokenWritten;
 	private int _tokensRead = 0;
-	private O _lastTokenRead;
-	private String _lastTokenReadTT;
+	private RingBuffer _lastInToken;
+	private RingBuffer _lastOutToken;
+	private String _lastOutRecord;
 	private int _restartCount = 0;
 
 	private boolean _performanceMode = false;
+	private boolean _strictMode = true;
 
 	{
 		_modelResolver = new DefaultModelResolver();
@@ -142,7 +143,7 @@ class TreeTaggerWrapper<O>
 	 */
 	public
 	void setPerformanceMode(
-			boolean performanceMode)
+			final boolean performanceMode)
 	{
 		_performanceMode = performanceMode;
 	}
@@ -156,6 +157,32 @@ class TreeTaggerWrapper<O>
 	boolean getPerformanceMode()
 	{
 		return _performanceMode;
+	}
+
+	/**
+	 * Set the strict mode. In this mode an {@link IllegalArgumentException} is thrown when the
+	 * token sent to TreeTagger and the token returned from it are not equal. Since the TreeTagger
+	 * returns "?" for characters it does not know, the question mark is interpreted as a wild
+	 * card when testing for equality.
+	 *
+	 * @param strictMode on/off.
+	 */
+	public
+	void setStrictMode(
+			final boolean strictMode)
+	{
+		_strictMode = strictMode;
+	}
+
+	/**
+	 * Get the strict mode state.
+	 *
+	 * @return strict mode state.
+	 */
+	public
+	boolean isStrictMode()
+	{
+		return _strictMode;
 	}
 
 	/**
@@ -452,8 +479,9 @@ class TreeTaggerWrapper<O>
 		_numTokens = aTokens.size();
 		_tokensRead = 0;
 		_tokensWritten = 0;
-		_lastTokenRead = null;
-		_lastTokenReadTT = null;
+		_lastInToken = new RingBuffer(10);
+		_lastOutToken = new RingBuffer(10);
+		_lastOutRecord = null;
 		_lastTokenWritten = null;
 
 		final Process taggerProc = getTaggerProcess();
@@ -538,6 +566,8 @@ class TreeTaggerWrapper<O>
 			}
 
 			boolean onlyWhitespace = true;
+			// Check if the token contains characters that break the communication with the
+			// TreeTagger process
 			for (int n = 0; n < text.length(); n++) {
 				char c = text.charAt(n);
 				switch (c) {
@@ -638,9 +668,9 @@ class TreeTaggerWrapper<O>
     {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Last token read (#").append(_tokensRead).append("): ");
-		if (_lastTokenRead != null) {
-			sb.append("[").append(getText(_lastTokenRead)).append("]");
-			sb.append(" - (").append(_lastTokenReadTT+")");
+		if (_lastInToken != null) {
+			sb.append("[").append(_lastInToken).append("]");
+			sb.append(" - (").append(_lastOutRecord+")");
 		}
 		else {
 			sb.append("none");
@@ -734,48 +764,50 @@ class TreeTaggerWrapper<O>
     	void run()
     	{
     		try {
-	    		String s;
+	    		String outRecord;
 	    		boolean inText = false;
 	    		while (true) {
-	    			s = in.readLine();
+	    			outRecord = in.readLine();
 
-	    			if (s == null) {
-	    				throw new IOException(
-	    						"TreeTagger has died. Make sure the following " +
-	    						"comand (in parentheses) works when running " +
-	    						"it from the command line: [echo \"test\" | " +
-	    						_procCmd+"]");
+	    			if (outRecord == null) {
+						throw new IOException(
+								"TreeTagger has died. Make sure the following comand (in " +
+								"parentheses) works when running it from the command line: [echo " +
+								"\"test\" | " + _procCmd + "]");
 	    			}
 
-	    			s = s.trim();
+	    			outRecord = outRecord.trim();
 
-	    			if (STARTOFTEXT.equals(s)) {
+	    			if (STARTOFTEXT.equals(outRecord)) {
 	    				inText = true;
 						if (TRACE) {
 							System.err.println("["+TreeTaggerWrapper.this+
-									"|TRACE] ("+_tokensRead+") START ["+s+"]");
+									"|TRACE] ("+_tokensRead+") START ["+outRecord+"]");
 						}
 	    				continue;
 	    			}
 
-	    			if (ENDOFTEXT.equals(s)) {
+	    			if (ENDOFTEXT.equals(outRecord)) {
 						if (TRACE) {
 							System.err.println("["+TreeTaggerWrapper.this+
-									"|TRACE] ("+_tokensRead+") COMPLETE ["+s+"]");
+									"|TRACE] ("+_tokensRead+") COMPLETE ["+outRecord+"]");
 						}
 	    				break;
 	    			}
 
 	    			if (inText) {
 	    				// Get word and tag
+	    				String outToken = null;
 	    				String posTag = null;
 	    				String lemma  = null;
 
-	    				// Sometimes TT seems to return odd lines, e.g.
-	    				// containing only a tag but no token and no lemma.
-	    				// For such cases we only return the original token
-	    				// we got, but lemma and pos will be null.
-	    				String fields1[] = RE_TAB.split(s, 2);
+						// Sometimes TT seems to return odd lines, e.g. containing only a tag but no
+						// token and no lemma. For such cases we only return the original token we
+						// got, but lemma and pos will be null.
+	    				String fields1[] = RE_TAB.split(outRecord, 2);
+	    				if (fields1.length > 0) {
+	    					outToken = fields1[0];
+	    				}
 	    				if (fields1.length == 2) {
 		    				final String tags  = fields1[1];
 		    				String fields2[] = RE_WHITESPACE.split(tags, 3);
@@ -787,27 +819,34 @@ class TreeTaggerWrapper<O>
 
 	    				// Get original token segment
     					if (tokenIterator.hasNext()) {
-	    					O token = tokenIterator.next();
+	    					O inToken = tokenIterator.next();
+    						final String inTokenText = getText(inToken);
 	    					_tokensRead++;
-	    					_lastTokenRead = token;
-	    					_lastTokenReadTT = s;
+	    					_lastInToken.add(inTokenText);
+	    					_lastOutToken.add(outToken);
+	    					_lastOutRecord = outRecord;
+	    					if (_strictMode) {
+	    						if (!Util.matches(inTokenText, outToken)) {
+									throw new IllegalStateException("[" + TreeTaggerWrapper.this
+											+ "] Token stream out of sync.\n" + getStatus());
+	    						}
+	    					}
     						if (TRACE) {
-    							System.err.println("["+TreeTaggerWrapper.this+
-    									"|TRACE] ("+_tokensRead+") IN ["+
-    									getText(token)+"] -- OUT: ["+s+
-    									"] -- POS: ["+posTag+"] -- LEMMA: ["+
-    									lemma+"]");
+								System.err.println("[" + TreeTaggerWrapper.this + "|TRACE] ("
+										+ _tokensRead + ") IN [" + inTokenText + "] -- OUT: ["
+										+ outRecord + "] -- POS: [" + posTag + "] -- LEMMA: ["
+										+ lemma + "]");
     						}
 
 		    				if (_handler != null) {
-								_handler.token(token, posTag, lemma);
+								_handler.token(inToken, posTag, lemma);
 	    					}
 	    				}
     					else {
-							throw new IllegalStateException(
-									"["+TreeTaggerWrapper.this+"] Have not seen ENDOFTEXT-marker but no more "+
-    								"tokens are available.\n"+
-    								"TT returned: ["+s+"]\n"+getStatus());
+							throw new IllegalStateException("[" + TreeTaggerWrapper.this
+									+ "] Have not seen ENDOFTEXT-marker but no more "
+									+ "tokens are available.\n" + "TT returned: [" + outRecord
+									+ "]\n" + getStatus());
     					}
 	    			}
 	    		}
@@ -855,9 +894,9 @@ class TreeTaggerWrapper<O>
 
     			while (tokenIterator.hasNext()) {
     				O token = tokenIterator.next();
-    				send(getText(token));
     				_lastTokenWritten = token;
     				_tokensWritten++;
+    				send(getText(token));
     			}
 
     			send(ENDOFTEXT);
