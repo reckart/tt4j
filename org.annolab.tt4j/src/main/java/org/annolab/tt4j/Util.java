@@ -122,6 +122,30 @@ class Util
 		return sb.toString();
 	}
 
+    public static
+    boolean matches(String a, String b)
+    {
+    	if (a == null && b == null) {
+    		return true;
+    	}
+    	if (a == null || b == null) {
+    		return false;
+    	}
+    	if (a.length() != b.length()) {
+    		return false;
+    	}
+    	for (int i = 0; i < a.length(); i ++) {
+    		if (a.charAt(i) == '?' || b.charAt(i) == '?') {
+    			continue;
+    		}
+    		if (a.charAt(i) == b.charAt(i)) {
+    			continue;
+    		}
+    		return false;
+    	}
+    	return true;
+    }
+
     /**
      * Close the given {@link Closeable}.
      *
