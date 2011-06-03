@@ -122,23 +122,35 @@ class Util
 		return sb.toString();
 	}
 
+    /**
+     * Checks if a token returned by TreeTagger corresponds to the token sent to TreeTagger. This
+     * method does not check for strict equality, because if TreeTagger does not know a character,
+     * it will return "?" instead. So this method interprets an "?" returned by TreeTagger as a
+     * single-character wildcard.
+     *
+     * @param tokenSent token sent to TreeTagger
+     * @param tokenReturned token returned from TreeTagger
+     * @return if the token returned matches the token sent.
+     */
     public static
-    boolean matches(String a, String b)
+    boolean matches(
+    		final String tokenSent,
+    		final String tokenReturned)
     {
-    	if (a == null && b == null) {
+    	if (tokenSent == null && tokenReturned == null) {
     		return true;
     	}
-    	if (a == null || b == null) {
+    	if (tokenSent == null || tokenReturned == null) {
     		return false;
     	}
-    	if (a.length() != b.length()) {
+    	if (tokenSent.length() != tokenReturned.length()) {
     		return false;
     	}
-    	for (int i = 0; i < a.length(); i ++) {
-    		if (a.charAt(i) == '?' || b.charAt(i) == '?') {
+    	for (int i = 0; i < tokenSent.length(); i ++) {
+    		if (tokenReturned.charAt(i) == '?') {
     			continue;
     		}
-    		if (a.charAt(i) == b.charAt(i)) {
+    		if (tokenSent.charAt(i) == tokenReturned.charAt(i)) {
     			continue;
     		}
     		return false;

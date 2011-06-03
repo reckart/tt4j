@@ -1,9 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
 	<groupId>org.annolab.tt4j</groupId>
 	<artifactId>org.annolab.tt4j</artifactId>
-	<name>TreeTagger for Java</name>
 	<version>1.0.15-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<name>TreeTagger for Java</name>
+	<description>TreeTagger for Java is a Java wrapper around the popular TreeTagger package by Helmut Schmid. It was written with a focus on platform-independence and easy integration into applications.</description>
+	<url>http://code.google.com/p/tt4j/</url>
 	<licenses>
 		<license>
 			<name>LGPL</name>
@@ -11,6 +19,11 @@
 			<url>http://www.gnu.org/licenses/lgpl-3.0.txt</url>
 		</license>
 	</licenses>
+	<scm>
+		<url>http://code.google.com/p/tt4j/source/browse/tt4j</url>
+		<connection>scm:svn:http://tt4j.googlecode.com/svn/tt4j/trunk/org.annolab.tt4j</connection>
+		<developerConnection>scm:svn:https://tt4j.googlecode.com/svn/tt4j/trunk/org.annolab.tt4j</developerConnection>
+	</scm>
 	<developers>
 		<developer>
 			<id>rec</id>
@@ -20,21 +33,6 @@
 			</roles>
 		</developer>
 	</developers>
-	<scm>
-		<connection>scm:svn:http://tt4j.googlecode.com/svn/tt4j/trunk/org.annolab.tt4j</connection>
-		<developerConnection>scm:svn:https://tt4j.googlecode.com/svn/tt4j/trunk/org.annolab.tt4j</developerConnection>
-	</scm>
-	<!-- Enabling the use of FTP -->
-  	<distributionManagement>
-    	<repository>
-    		<id>ftp-annolab</id>
-    		<url>ftp://annolab.org/annolab/m2/releases</url>
-    	</repository>
-    	<site>
-    		<id>ftp-annolab</id>
-    		<url>ftp://annolab.org/annolab/tt4j</url>
-    	</site>
-  	</distributionManagement>
 	<build>
 		<plugins>
 			<plugin>
@@ -77,13 +75,6 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ftp</artifactId>
-				<version>1.0-beta-5</version>
-			</extension>
-		</extensions>
 	</build>
 	<dependencies>
 		<dependency>
