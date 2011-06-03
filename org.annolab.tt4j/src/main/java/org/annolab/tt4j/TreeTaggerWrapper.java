@@ -96,6 +96,11 @@ class TreeTaggerWrapper<O>
     private static final String STARTOFTEXT = "<This-is-the-start-of-the-text />";
     private static final String ENDOFTEXT = "<This-is-the-end-of-the-text />";
 
+	/**
+	 *  This is the maximal token size that TreeTagger on OS X supports (empirically determined).
+	 */
+    public static final int MAX_POSSIBLE_TOKEN_LENGTH = 99998;
+
 	private Model _model = null;
 
 	private Process _proc = null;
@@ -123,6 +128,7 @@ class TreeTaggerWrapper<O>
 
 	private boolean _performanceMode = false;
 	private boolean _strictMode = true;
+	private int _maximumTokenLength = 90000;
 
 	{
 		_modelResolver = new DefaultModelResolver();
@@ -157,6 +163,31 @@ class TreeTaggerWrapper<O>
 	boolean getPerformanceMode()
 	{
 		return _performanceMode;
+	}
+
+	/**
+	 * Set the maximal number of characters allowed in a token. The maximal supported token length
+	 * is determined by {@link #MAX_POSSIBLE_TOKEN_LENGTH} and the length set is automatically
+	 * capped to that number. Note that this is the size in byte, not the size in characters.
+	 *
+	 * @param maximumTokenLength the maximal number of bytes allowed in a token.
+	 */
+	public
+	void setMaximumTokenLength(
+			final int maximumTokenLength)
+	{
+		_maximumTokenLength = Math.min(maximumTokenLength, MAX_POSSIBLE_TOKEN_LENGTH);
+	}
+
+	/**
+	 * Get the maximum number of bytes allowed in a token.
+	 *
+	 * @return the maximum number of bytes allowed in a token.
+	 */
+	public
+	int getMaximumTokenLength()
+	{
+		return _maximumTokenLength;
 	}
 
 	/**
@@ -490,15 +521,20 @@ class TreeTaggerWrapper<O>
 		final Reader reader = new Reader(
 				taggerProc.getInputStream(), aTokens.iterator());
 		final Thread readerThread = new Thread(reader);
+		readerThread.setName("TT4J StdOut Reader");
 		readerThread.start();
 
 		// One thread consumes stderr so we do not get a deadlock.
 		final StreamGobbler gob = new StreamGobbler(taggerProc.getErrorStream());
-		new Thread(gob).start();
+		Thread errorGobblerThread = new Thread(gob);
+		errorGobblerThread.setName("TT4J StdErr Reader");
+		errorGobblerThread.start();
 
 		// Now we can start writing.
 		final Writer writer = new Writer(aTokens.iterator());
-		new Thread(writer).start();
+		Thread writerThread = new Thread(writer);
+		writerThread.setName("TT4J StdIn Writer");
+		writerThread.start();
 
 		// Wait for the processing to end. Every once in a while we check if an
 		// exception has been thrown. When the Reader thread is complete, we can
@@ -508,20 +544,12 @@ class TreeTaggerWrapper<O>
 			synchronized (reader) {
 				while (readerThread.getState() != State.TERMINATED) {
 					try {
-						// If the reader or writer fail, we kill the treetagger and bail
+						// If the reader or writer fail, we kill the TreeTagger and bail
 						// out. This may be a bit harsh, but easier than coding the
 						// Reader and Writer so that we can abort them. If the process
 						// is dead, the streams die and then the threads will also die
 						// with an IOException.
-						if (writer.getException() != null) {
-							destroy();
-							throw new TreeTaggerException(writer.getException());
-						}
-
-						if (reader.getException() != null) {
-							destroy();
-							throw new TreeTaggerException(reader.getException());
-						}
+						checkThreads(reader, writer, gob);
 
 						reader.wait(20);
 					}
@@ -529,6 +557,8 @@ class TreeTaggerWrapper<O>
 						// Ignore
 					}
 				}
+				// At the end make sure that no thread exited with an exception
+				checkThreads(reader, writer, gob);
 			}
 		}
 		finally {
@@ -538,18 +568,42 @@ class TreeTaggerWrapper<O>
 //		info("Parsed " + count + " pos segments");
 	}
 
+	private
+	void checkThreads(
+			final Reader reader,
+			final Writer writer,
+			final StreamGobbler gobbler)
+	throws TreeTaggerException
+	{
+		if (gobbler.getException() != null) {
+			destroy();
+			throw new TreeTaggerException(gobbler.getException());
+		}
+
+		if (writer.getException() != null) {
+			destroy();
+			throw new TreeTaggerException(writer.getException());
+		}
+
+		if (reader.getException() != null) {
+			destroy();
+			throw new TreeTaggerException(reader.getException());
+		}
+	}
+
 	/**
+	 * Filter out tokens that cause problems when communicating with the TreeTagger process.
 	 *
-	 *
-	 * @param aTokenList
-	 * @return
+	 * @param tokenList the original list of tokens.
+	 * @return the filtered list of tokens.
 	 */
 	protected
 	Collection<O> removeProblematicTokens(
-			Collection<O> aTokenList)
+			Collection<O> tokenList)
+	throws UnsupportedEncodingException
 	{
-		Collection<O> filtered = new ArrayList<O>(aTokenList.size());
-		Iterator<O> i = aTokenList.iterator();
+		Collection<O> filtered = new ArrayList<O>(tokenList.size());
+		Iterator<O> i = tokenList.iterator();
 		boolean skipped = true;
 		String text = null;
 		skipToken: while (i.hasNext()) {
@@ -563,6 +617,14 @@ class TreeTaggerWrapper<O>
 			text = getText(token);
 			if (text == null) {
 				continue;
+			}
+			// Check if the encoded string may be longer than the maximal allowed size. We expect
+			// that the String might at worst grow to 4 times its size because a character in UTF-8
+			// can become at most 4 bytes.
+			if (text.length() > (_maximumTokenLength >> 2)) {
+				if (text.getBytes(_model.getEncoding()).length >= _maximumTokenLength) {
+					continue;
+				}
 			}
 
 			boolean onlyWhitespace = true;
@@ -667,28 +729,44 @@ class TreeTaggerWrapper<O>
     String getStatus()
     {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Last token read (#").append(_tokensRead).append("): ");
-		if (_lastInToken != null) {
-			sb.append("[").append(_lastInToken).append("]");
-			sb.append(" - (").append(_lastOutRecord+")");
+		try {
+			int status = _proc.exitValue();
+			sb.append("TreeTagger process: exited with status ").append(status).append('\n');
 		}
-		else {
-			sb.append("none");
+		catch (IllegalThreadStateException e) {
+			sb.append("TreeTagger process: still running.\n");
 		}
-		sb.append("\n");
 
-		sb.append("Last token written (#").append(_tokensWritten).append("): ");
+		sb.append("Last token sent (#").append(_tokensWritten).append("): ");
 		if (_lastTokenWritten != null) {
 			sb.append("[").append(getText(_lastTokenWritten)).append("]");
 		}
 		else {
 			sb.append("none");
 		}
-		sb.append("\n");
+		sb.append('\n');
 
-		sb.append("Tokens originally recieved: ").append(_numTokens).append("\n");
-		sb.append("Tokens written            : ").append(_tokensWritten).append("\n");
-		sb.append("Tokens read               : ").append(_tokensRead).append("\n");
+		sb.append("Last tokens read: ");
+		if (_lastInToken != null) {
+			sb.append("[").append(_lastInToken).append("]");
+		}
+		else {
+			sb.append("none");
+		}
+		sb.append('\n');
+
+		sb.append("Last record read (#").append(_tokensRead).append("): ");
+		if (_lastOutRecord != null) {
+			sb.append("[").append(_lastOutRecord+"]");
+		}
+		else {
+			sb.append("none");
+		}
+		sb.append('\n');
+
+		sb.append("Tokens originally recieved: ").append(_numTokens).append('\n');
+		sb.append("Tokens written            : ").append(_tokensWritten).append('\n');
+		sb.append("Tokens read               : ").append(_tokensRead).append('\n');
 
 		return sb.toString();
     }
@@ -710,6 +788,7 @@ class TreeTaggerWrapper<O>
     {
     	private final InputStream in;
     	private boolean done = false;
+		private Throwable _exception;
 
     	public
     	StreamGobbler(
@@ -727,17 +806,28 @@ class TreeTaggerWrapper<O>
     	public
     	void run()
     	{
+    		StringBuilder sb = new StringBuilder();
+    		byte[] buffer = new byte[1024];
     		try {
 	    		while(!done) {
-	    			in.skip(in.available());
-	    			in.wait(100);
+    				while (in.available() > 0) {
+    					in.read(buffer, 0, Math.min(buffer.length, in.available()));
+    					sb.append(new String(buffer));
+    				}
+	    			Thread.sleep(100);
 	    		}
     		}
-    		catch (final Exception e) {
-    			done = true;
+    		catch (final Throwable e) {
+    			System.out.println("Last seen from TreeTagger ["+sb+"]");
+    			_exception = e;
     		}
     	}
-    }
+
+    	public
+    	Throwable getException() {
+			return _exception;
+		}
+}
 
 	private
     class Reader
@@ -746,7 +836,7 @@ class TreeTaggerWrapper<O>
 		private final Iterator<O> tokenIterator;
 		private final BufferedReader in;
 		private final InputStream ins;
-		private Exception _exception;
+		private Throwable _exception;
 
     	public
     	Reader(
@@ -771,9 +861,10 @@ class TreeTaggerWrapper<O>
 
 	    			if (outRecord == null) {
 						throw new IOException(
-								"TreeTagger has died. Make sure the following comand (in " +
-								"parentheses) works when running it from the command line: [echo " +
-								"\"test\" | " + _procCmd + "]");
+								"The TreeTagger process has died:\n" + getStatus() +
+								"\nMake sure the following comand (in parentheses) works when " +
+								"running it from the command line: [echo \"test\" | " +
+								_procCmd + "]");
 	    			}
 
 	    			outRecord = outRecord.trim();
@@ -851,7 +942,7 @@ class TreeTaggerWrapper<O>
 	    			}
 	    		}
     		}
-    		catch (final Exception e) {
+    		catch (final Throwable e) {
     			_exception = e;
     		}
 
@@ -861,7 +952,7 @@ class TreeTaggerWrapper<O>
     	}
 
     	public
-    	Exception getException() {
+    	Throwable getException() {
 			return _exception;
 		}
     }
@@ -871,7 +962,7 @@ class TreeTaggerWrapper<O>
     implements Runnable
     {
 		private final Iterator<O> tokenIterator;
-		private Exception _exception;
+		private Throwable _exception;
 		private PrintWriter _pw;
 
     	public
@@ -902,7 +993,7 @@ class TreeTaggerWrapper<O>
     			send(ENDOFTEXT);
 				send("\n.\n"+_model.getFlushSequence()+".\n.\n.\n.\n");
     		}
-    		catch (final Exception e) {
+    		catch (final Throwable e) {
     			_exception = e;
     		}
     	}
@@ -917,7 +1008,7 @@ class TreeTaggerWrapper<O>
     	}
 
     	public
-    	Exception getException()
+    	Throwable getException()
 		{
 			return _exception;
 		}
