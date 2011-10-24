@@ -19,7 +19,8 @@ implements Model
 {
 	private String _encoding;
 	private File _file;
-	private String _flushSequence = ".\n.\n.\n.\n";
+	// Issue 6 - We need the "()" to flush properly when using the chinese model
+.	private String _flushSequence = ".\n.\n.\n.\n(\n)\n";
 	private String _name;
 
 	public
