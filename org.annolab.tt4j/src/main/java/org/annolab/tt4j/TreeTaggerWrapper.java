@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.annolab.tt4j;
 
+import static java.util.Arrays.asList;
 import static org.annolab.tt4j.Util.join;
 
 import java.io.BufferedReader;
@@ -484,6 +485,21 @@ class TreeTaggerWrapper<O>
 		super.finalize();
 	}
 
+	/**
+	 * Process the given array of token objects.
+	 *
+	 * @param aTokens the token objects.
+	 * @throws IOException if there is a problem providing the model or executable.
+	 * @throws TreeTaggerException if there is a problem communication with TreeTagger.
+	 */
+	public
+	void process(
+			final O[] aTokenList)
+	throws IOException, TreeTaggerException
+	{
+		process(asList(aTokenList));
+	}
+	
 	/**
 	 * Process the given list of token objects.
 	 *
