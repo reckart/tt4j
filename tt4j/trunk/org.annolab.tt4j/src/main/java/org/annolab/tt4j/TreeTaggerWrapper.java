@@ -704,6 +704,12 @@ class TreeTaggerWrapper<O>
 
 			cmd.add(_model.getFile().getAbsolutePath());
 			_procCmd = join(cmd, " ");
+			
+			if (TRACE) {
+				System.err.println("[" + TreeTaggerWrapper.this
+						+ "|TRACE] Invoking TreeTagger [" + _procCmd + "]");
+			}
+
 
 			final ProcessBuilder pb = new ProcessBuilder();
 			pb.command(cmd);
