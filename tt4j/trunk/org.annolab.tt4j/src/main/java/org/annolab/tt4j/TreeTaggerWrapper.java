@@ -108,11 +108,13 @@ class TreeTaggerWrapper<O>
 	private String  _procCmd = null;
 
 	private TokenHandler<O> _handler = null;
+	private ProbabilityHandler _probabilityHandler = null;
 	private TokenAdapter<O> _adapter = null;
 	private PlatformDetector _platform = null;
 	private ModelResolver _modelResolver = null;
 	private ExecutableResolver _exeResolver = null;
 
+	private Double _probabilityThreshold = null;
 	private Double _epsilon = null;
 	private boolean _hyphenHeuristics = false;
 
@@ -264,8 +266,34 @@ class TreeTaggerWrapper<O>
 	{
 		return _epsilon;
 	}
+	
+	public 
+	Double getProbabilityThreshold()
+    {
+        return _probabilityThreshold;
+    }
 
-	/**
+    /**
+     * Print all tags of a word with a probability higher than X times the largest probability.
+     * Setting this to {@code null} or to a negative value disables the output of probabilities.
+     * Per default this is disabled.
+     * 
+     * @param aProbabilityThreshold threshold X.
+     */
+    public 
+    void setProbabilityThreshold(
+            final Double aThreshold)
+    {
+        if (aThreshold != null && aThreshold < 0.0) {
+            _probabilityThreshold = null;
+        }
+        else {
+            _probabilityThreshold = aThreshold;
+        }
+        stopTaggerProcess();
+    }
+
+    /**
 	 * Turn on the heuristics fur guessing the parts of speech of unknown hyphenated words.
 	 *
 	 * @param hyphenHeuristics use hyphen heuristics.
@@ -346,6 +374,8 @@ class TreeTaggerWrapper<O>
 			final TokenHandler<O> aHandler)
 	{
 		_handler = aHandler;
+		_probabilityHandler = aHandler instanceof ProbabilityHandler ? 
+		        (ProbabilityHandler) aHandler : null;
 	}
 
 	/**
@@ -698,6 +728,12 @@ class TreeTaggerWrapper<O>
 				cmd.add(String.format(Locale.US, "%.12f", _epsilon));
 			}
 
+	         if (_probabilityThreshold != null) {
+                cmd.add("-prob");
+                cmd.add("-threshold");
+                cmd.add(String.format(Locale.US, "%.12f", _probabilityThreshold));
+            }
+
 			if (_hyphenHeuristics) {
 				cmd.add("-hyphen-heuristics");
 			}
@@ -911,8 +947,6 @@ class TreeTaggerWrapper<O>
 	    			if (inText) {
 	    				// Get word and tag
 	    				String outToken = null;
-	    				String posTag = null;
-	    				String lemma  = null;
 
 						// Sometimes TT seems to return odd lines, e.g. containing only a tag but no
 						// token and no lemma. For such cases we only return the original token we
@@ -921,46 +955,41 @@ class TreeTaggerWrapper<O>
 	    				if (fields1.length > 0) {
 	    					outToken = fields1[0];
 	    				}
+	    				
+	                    // Record what we have sent - getNextToken uses this when throwing an
+                        // exception.
+                        _lastOutToken.add(outToken);
+                        _lastOutRecord = outRecord;
+
+                        // Get original token segment
+                        O inToken = getNextToken(outToken);
+
+	    				// If a pos and lemma is present, return them.
 	    				if (fields1.length == 2) {
 		    				final String tags  = fields1[1];
-		    				String fields2[] = RE_WHITESPACE.split(tags, 3);
-		    				if (fields2.length >= 2) {
-			    				posTag = fields2[0].trim().intern();
-			    				lemma  = fields2[1].trim();
+		    				String fields2[] = RE_WHITESPACE.split(tags);
+		    				for (int n = 0; n < fields2.length; n += 3) {
+                                String posTag = fields2[n+0].trim().intern();
+                                String lemma  = fields2[n+1].trim();
+                                String prob = _probabilityThreshold != null ? fields2[n+2] : null;
+
+                                if (TRACE) {
+                                    System.err.println(" -- POS: [" + posTag + "] -- LEMMA: ["
+                                            + lemma + "] -- PROBABILITY: [" + prob + "]");
+                                }
+                                
+                                // Notify the handler for the token and the best tag/lemma
+                                if (_handler != null && n == 0) {
+                                    _handler.token(inToken, posTag, lemma);
+                                }
+                                
+                                // If probabilities are provided and a handler for them is present
+                                // then notify the probability handler
+                                if (prob != null && _probabilityHandler != null) {
+                                    _probabilityHandler.probability(posTag, lemma, Double.valueOf(prob));
+                                }
 		    				}
 	    				}
-
-	    				// Get original token segment
-    					if (tokenIterator.hasNext()) {
-	    					O inToken = tokenIterator.next();
-    						final String inTokenText = getText(inToken);
-	    					_tokensRead++;
-	    					_lastInToken.add(inTokenText);
-	    					_lastOutToken.add(outToken);
-	    					_lastOutRecord = outRecord;
-	    					if (_strictMode) {
-	    						if (!Util.matches(inTokenText, outToken)) {
-									throw new IllegalStateException("[" + TreeTaggerWrapper.this
-											+ "] Token stream out of sync.\n" + getStatus());
-	    						}
-	    					}
-    						if (TRACE) {
-								System.err.println("[" + TreeTaggerWrapper.this + "|TRACE] ("
-										+ _tokensRead + ") IN [" + inTokenText + "] -- OUT: ["
-										+ outRecord + "] -- POS: [" + posTag + "] -- LEMMA: ["
-										+ lemma + "]");
-    						}
-
-		    				if (_handler != null) {
-								_handler.token(inToken, posTag, lemma);
-	    					}
-	    				}
-    					else {
-							throw new IllegalStateException("[" + TreeTaggerWrapper.this
-									+ "] Have not seen ENDOFTEXT-marker but no more "
-									+ "tokens are available.\n" + "TT returned: [" + outRecord
-									+ "]\n" + getStatus());
-    					}
 	    			}
 	    		}
     		}
@@ -973,6 +1002,41 @@ class TreeTaggerWrapper<O>
 			}
     	}
 
+    	private 
+    	O getNextToken(
+    	        final String aOutToken)
+    	{
+            // Get original token segment
+            if (tokenIterator.hasNext()) {
+                O inToken = tokenIterator.next();
+                _tokensRead++;
+                
+                final String inTokenText = getText(inToken);
+                _lastInToken.add(inTokenText);
+ 
+                if (_strictMode) {
+                    if (!Util.matches(inTokenText, aOutToken)) {
+                        throw new IllegalStateException("[" + TreeTaggerWrapper.this
+                                + "] Token stream out of sync.\n" + getStatus());
+                    }
+                }
+                
+                if (TRACE) {
+                    System.err.print("[" + TreeTaggerWrapper.this + "|TRACE] ("
+                            + _tokensRead + ") IN [" + inTokenText + "] -- OUT: ["
+                            + aOutToken + "]");
+                }
+                
+                return inToken;
+            }
+            else {
+                throw new IllegalStateException("[" + TreeTaggerWrapper.this
+                        + "] Have not seen ENDOFTEXT-marker but no more "
+                        + "tokens are available.\n" + "TT returned: [" + _lastOutRecord
+                        + "]\n" + getStatus());
+            }
+    	}
+    	
     	public
     	Throwable getException() {
 			return _exception;
