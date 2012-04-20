@@ -50,6 +50,49 @@ public class TreeTaggerWrapperTest
         assertEquals(expected, actual);
 	}
 
+   @Test
+    public void testEnglishWithProbabilities2() throws Exception
+    {
+        TreeTaggerWrapper<String> tt = new TreeTaggerWrapper<String>();
+        tt.setProbabilityThreshold(0.1);
+        List<String> actual =  run(tt, "english-par-linux-3.2.bin:iso8859-1", 
+                "He", "could", "lead", "if", "he", "would", "get", "the", "lead", "out", ".");
+        
+        List<String> expected = asList(
+                "He PP he 1.0",
+                "could MD could 1.0",
+                "lead VV lead 0.999748",
+                "if IN if 1.0",
+                "he PP he 1.0",
+                "would MD would 1.0",
+                "get VV get 1.0",
+                "the DT the 0.999993",
+                "lead NN lead 0.753085",
+                "lead VV lead 0.103856",
+                "out RP out 0.726204",
+                "out IN out 0.226546",
+                ". SENT . 1.0");
+        
+        assertEquals(expected, actual);
+    }
+
+   @Test
+   public void testEnglishWithProbabilities4() throws Exception
+   {
+       TreeTaggerWrapper<String> tt = new TreeTaggerWrapper<String>();
+       tt.setProbabilityThreshold(0.1);
+       List<String> actual =  run(tt, "english-par-linux-3.2.bin:iso8859-1", 
+               "lead");
+       
+       List<String> expected = asList(
+               "lead NN lead 0.647454",
+               "lead VV lead 0.196787",
+               "lead JJ lead 0.142647");
+       
+       assertEquals(expected, actual);
+   }
+	
+
 	private List<String> run(final TreeTaggerWrapper<String> aWrapper, final String aModel, 
 	        final String... aTokens)
 		throws IOException, TreeTaggerException
@@ -75,6 +118,11 @@ public class TreeTaggerWrapperTest
 				}
 			});
 			aWrapper.process(aTokens);
+			
+			for (String o : output) {
+			    System.out.println(o);
+			}
+			
 			return output;
 		}
 		finally {
