@@ -108,7 +108,7 @@ class TreeTaggerWrapper<O>
 	private String  _procCmd = null;
 
 	private TokenHandler<O> _handler = null;
-	private ProbabilityHandler _probabilityHandler = null;
+	private ProbabilityHandler<O> _probabilityHandler = null;
 	private TokenAdapter<O> _adapter = null;
 	private PlatformDetector _platform = null;
 	private ModelResolver _modelResolver = null;
@@ -375,7 +375,7 @@ class TreeTaggerWrapper<O>
 	{
 		_handler = aHandler;
 		_probabilityHandler = aHandler instanceof ProbabilityHandler ? 
-		        (ProbabilityHandler) aHandler : null;
+		        (ProbabilityHandler<O>) aHandler : null;
 	}
 
 	/**
@@ -987,6 +987,11 @@ class TreeTaggerWrapper<O>
                                 // then notify the probability handler
                                 if (prob != null && _probabilityHandler != null) {
                                     _probabilityHandler.probability(posTag, lemma, Double.valueOf(prob));
+                                }
+                                else {
+                                	// If there is no probability handler, then we do not have to
+                                	// process all the fields.
+                                	break;
                                 }
 		    				}
 	    				}
