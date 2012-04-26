@@ -90,7 +90,6 @@ class TreeTaggerWrapper<O>
 	public static boolean TRACE = false;
 
     private final static Pattern RE_TAB			= Pattern.compile("[\\t]");
-    private final static Pattern RE_WHITESPACE	= Pattern.compile("[\\p{Zs}\\p{C}]");
 
     // A tag to identify begin/end of a text in the data flow.
     // (avoid to restart TreeTagger process each time)
@@ -967,7 +966,7 @@ class TreeTaggerWrapper<O>
 	    				// If a pos and lemma is present, return them.
 	    				if (fields1.length == 2) {
 		    				final String tags  = fields1[1];
-		    				String fields2[] = RE_WHITESPACE.split(tags);
+		    				String fields2[] = RE_TAB.split(tags);
 		    				for (int n = 0; n < fields2.length; n += 3) {
                                 String posTag = fields2[n+0].trim().intern();
                                 String lemma  = fields2[n+1].trim();
@@ -999,7 +998,8 @@ class TreeTaggerWrapper<O>
 	    		}
     		}
     		catch (final Throwable e) {
-    			_exception = e;
+				_exception = new TreeTaggerException("Unable to process record [" + _lastOutRecord
+						+ "]", e);
     		}
 
     		synchronized (this) {

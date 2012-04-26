@@ -3,9 +3,11 @@ package org.annolab.tt4j;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.Test;
 
@@ -29,6 +31,19 @@ public class TreeTaggerWrapperTest
 		        "test NN test", 
 		        ". SENT .");
 		
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void testGermanText() throws Exception
+	{
+		String text = Util.readFile(new File("src/test/resources/text/test-de.txt"), "UTF-8");
+		String actual = Util.join(run(new TreeTaggerWrapper<String>(), 
+		        "german-par-linux-3.2-utf8.bin:utf-8",
+		        Util.tokenize(text, Locale.GERMAN)), "\n");
+		
+		String expected = Util.readFile(new File("src/test/resources/text/test-de-expected.txt"), "UTF-8");
+
 		assertEquals(expected, actual);
 	}
 

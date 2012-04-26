@@ -13,11 +13,21 @@ package org.annolab.tt4j;
 import static java.io.File.separator;
 
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.CharBuffer;
+import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Utility functions.
@@ -175,5 +185,71 @@ class Util
 	    		// Ignore
 	    	}
     	}
+    }
+    
+    /**
+     * For tests only.
+     */
+    protected static
+    String readFile(
+    		final File aFile, 
+    		final String aEncoding)
+    throws IOException
+    {
+    	Reader reader = null;
+    	try {
+        	StringBuilder sb = new StringBuilder();
+        	CharBuffer buffer = CharBuffer.allocate(65535);
+    		reader = new InputStreamReader(new FileInputStream(aFile), aEncoding);
+    		while (reader.ready()) {
+    			reader.read(buffer);
+    			buffer.flip();
+    			sb.append(buffer.toString());
+    		}
+    		return sb.toString();
+    	}
+    	finally {
+    		close(reader);
+    	}
+    }
+
+    /**
+     * For tests only.
+     */
+    protected static
+    void writeFile(
+    		final String aText, 
+    		final File aFile, 
+    		final String aEncoding)
+    throws IOException
+    {
+    	Writer writer = null;
+    	try {
+    		aFile.getParentFile().mkdirs();
+        	writer = new OutputStreamWriter(new FileOutputStream(aFile), aEncoding);
+        	writer.write(aText);
+    	}
+    	finally {
+    		close(writer);
+    	}
+    }
+
+    /**
+     * For tests only.
+     */
+    protected static
+    String[] tokenize(
+    		final String aText, 
+    		final Locale aLocale)
+    {
+    	List<String> tokens = new ArrayList<String>();
+    	BreakIterator bi = BreakIterator.getWordInstance(aLocale);
+    	bi.setText(aText);
+    	int begin = 0;
+    	while (bi.next() != BreakIterator.DONE) {
+    		tokens.add(aText.substring(begin, bi.current()));
+    		begin = bi.current();
+    	}
+    	return tokens.toArray(new String[tokens.size()]);
     }
 }
