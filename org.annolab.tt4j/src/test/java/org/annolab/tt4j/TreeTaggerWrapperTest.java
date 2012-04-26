@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.junit.Assume;
 import org.junit.Test;
 
 public class TreeTaggerWrapperTest
@@ -112,6 +113,8 @@ public class TreeTaggerWrapperTest
 	        final String... aTokens)
 		throws IOException, TreeTaggerException
 	{
+		Assume.assumeTrue(System.getenv("TREETAGGER_HOME") != null);
+		
 		try {
 			final List<String> output = new ArrayList<String>();
 			aWrapper.setModel(aModel);
