@@ -39,6 +39,17 @@ class RingBuffer
 		}
 	}
 
+	public
+	int size()
+	{
+		if (_begin <= _end) {
+			return _end - _begin + 1;
+		}
+		else {
+			return _content.length - _begin + _end + 1;
+		}
+	}
+	
 	@Override
 	public
 	String toString()
