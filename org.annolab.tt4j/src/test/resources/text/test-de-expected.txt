@@ -2434,7 +2434,6 @@ nicht PTKNEG nicht
 Ei NN Ei
 , $, ,
 Großmutter NN Großmutter
-­ $( ­
 es PPER es
 war VAFIN sein
 doch ADV doch

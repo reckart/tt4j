@@ -10,16 +10,15 @@ import java.util.List;
 import java.util.Locale;
 
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TreeTaggerWrapperTest
 {
-	{
-		TreeTaggerWrapper.TRACE = true;
-	}
-	
 	@Test
-	public void testEnglish() throws Exception
+	public 
+	void testEnglish() 
+	throws Exception
 	{
 		List<String> actual = run(new TreeTaggerWrapper<String>(), 
 		        "english-par-linux-3.2.bin:iso8859-1",
@@ -36,7 +35,81 @@ public class TreeTaggerWrapperTest
 	}
 
 	@Test
-	public void testGermanText() throws Exception
+	public 
+	void testBruteCharsUTF8()
+	throws Exception
+	{
+		System.out.println("--- UTF8 (no probability) ---");
+		testBruteChars("german-par-linux-3.2-utf8.bin:utf-8", false);
+		System.out.println("--- UTF8 (with probability) ---");
+		testBruteChars("german-par-linux-3.2-utf8.bin:utf-8", true);
+	}
+
+	@Ignore
+	@Test
+	public 
+	void testBruteCharsISO8859()
+	throws Exception
+	{
+		System.out.println("--- ISO8859 (no probability)  ---");
+		testBruteChars("english-par-linux-3.2.bin:iso8859-1", false);
+		System.out.println("--- ISO8859 (with probability)  ---");
+		testBruteChars("english-par-linux-3.2.bin:iso8859-1", true);
+	}
+
+	public 
+	void testBruteChars(
+			final String aModel,
+			final boolean aWithProbability)
+	throws Exception
+	{
+		TreeTaggerWrapper.TRACE = false;
+
+		TreeTaggerWrapper<String> tt = new TreeTaggerWrapper<String>();
+		if (aWithProbability) {
+			tt.setProbabilityThreshold(0.1);
+		}
+		tt.setModel(aModel);
+		
+		int exceptionCount = 0;
+		int[] cp = new int[1];
+		int lastGood = -1;
+		int lastLog = 0;
+		for (int c = 0x0; c <= Character.MAX_CODE_POINT; c++) {
+			try {
+				cp[0] = c;
+				tt.process(new String[] { new String(cp, 0, 1) } );
+				
+				if (c <= 0xFFFF && lastGood != c-1) {
+					System.out.printf("[0x%08X] - [0x%08X] causes problems %n", lastGood + 1, c-1);
+				}
+				lastGood = cp[0];
+				if (c > 0xFFFF) {
+					// Faster scanning above 16bit
+					c += 12;
+				}
+				if (c / 0x1000 > lastLog) {
+					System.out.printf("Progress: %08X%n", cp[0]);
+					lastLog = c / 0x1000;
+				}
+			}
+			catch (TreeTaggerException e) {
+				System.out.printf("[0x%08X] - %s%n", cp[0], e.getMessage());
+				tt.destroy();
+				if (aWithProbability) {
+					tt.setProbabilityThreshold(0.1);
+				}
+				tt.setModel(aModel);
+				exceptionCount++;
+			}
+		}
+		assertEquals(0,  exceptionCount);
+	}
+
+	@Test
+	public 
+	void testGermanText()
+	throws Exception
 	{
 		String text = Util.readFile(new File("src/test/resources/text/test-de.txt"), "UTF-8");
 		String actual = Util.join(run(new TreeTaggerWrapper<String>(), 
@@ -49,7 +122,9 @@ public class TreeTaggerWrapperTest
 	}
 
 	@Test
-	public void testEnglishWithProbabilities() throws Exception
+	public 
+	void testEnglishWithProbabilities()
+	throws Exception
 	{
 		TreeTaggerWrapper<String> tt = new TreeTaggerWrapper<String>();
 		tt.setProbabilityThreshold(0.1);
@@ -66,8 +141,10 @@ public class TreeTaggerWrapperTest
         assertEquals(expected, actual);
 	}
 
-   @Test
-    public void testEnglishWithProbabilities2() throws Exception
+    @Test
+    public 
+    void testEnglishWithProbabilities2()
+    throws Exception
     {
         TreeTaggerWrapper<String> tt = new TreeTaggerWrapper<String>();
         tt.setProbabilityThreshold(0.1);
@@ -92,29 +169,36 @@ public class TreeTaggerWrapperTest
         assertEquals(expected, actual);
     }
 
-   @Test
-   public void testEnglishWithProbabilities4() throws Exception
-   {
-       TreeTaggerWrapper<String> tt = new TreeTaggerWrapper<String>();
-       tt.setProbabilityThreshold(0.1);
-       List<String> actual =  run(tt, "english-par-linux-3.2.bin:iso8859-1", 
+    @Test
+    public
+    void testEnglishWithProbabilities4()
+    throws Exception
+    {
+    	TreeTaggerWrapper<String> tt = new TreeTaggerWrapper<String>();
+        tt.setProbabilityThreshold(0.1);
+        List<String> actual =  run(tt, "english-par-linux-3.2.bin:iso8859-1", 
                "lead");
        
-       List<String> expected = asList(
+        List<String> expected = asList(
                "lead NN lead 0.647454",
                "lead VV lead 0.196787",
                "lead JJ lead 0.142647");
        
-       assertEquals(expected, actual);
-   }
+        assertEquals(expected, actual);
+    }
 	
 
-	private List<String> run(final TreeTaggerWrapper<String> aWrapper, final String aModel, 
+	private 
+	List<String> run(
+			final TreeTaggerWrapper<String> aWrapper, 
+			final String aModel, 
 	        final String... aTokens)
-		throws IOException, TreeTaggerException
+	throws IOException, TreeTaggerException
 	{
 		Assume.assumeTrue(System.getenv("TREETAGGER_HOME") != null);
-		
+
+		TreeTaggerWrapper.TRACE = true;
+
 		try {
 			final List<String> output = new ArrayList<String>();
 			aWrapper.setModel(aModel);
@@ -136,11 +220,7 @@ public class TreeTaggerWrapperTest
 				}
 			});
 			aWrapper.process(aTokens);
-			
-			for (String o : output) {
-			    System.out.println(o);
-			}
-			
+						
 			return output;
 		}
 		finally {
