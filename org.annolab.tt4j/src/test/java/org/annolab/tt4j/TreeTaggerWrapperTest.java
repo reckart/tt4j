@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TreeTaggerWrapperTest
@@ -45,7 +44,6 @@ public class TreeTaggerWrapperTest
 		testBruteChars("german-par-linux-3.2-utf8.bin:utf-8", true);
 	}
 
-	@Ignore
 	@Test
 	public 
 	void testBruteCharsISO8859()
@@ -63,6 +61,8 @@ public class TreeTaggerWrapperTest
 			final boolean aWithProbability)
 	throws Exception
 	{
+		Assume.assumeTrue(System.getenv("TREETAGGER_HOME") != null);
+		
 		TreeTaggerWrapper.TRACE = false;
 
 		TreeTaggerWrapper<String> tt = new TreeTaggerWrapper<String>();
@@ -117,6 +117,7 @@ public class TreeTaggerWrapperTest
 		        Util.tokenize(text, Locale.GERMAN)), "\n");
 		
 		String expected = Util.readFile(new File("src/test/resources/text/test-de-expected.txt"), "UTF-8");
+		Util.writeFile(actual, new File("target/test-output/test-de-actual.txt"), "UTF-8");
 
 		assertEquals(expected, actual);
 	}
