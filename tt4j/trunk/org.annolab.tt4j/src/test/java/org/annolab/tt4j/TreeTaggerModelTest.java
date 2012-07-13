@@ -29,7 +29,7 @@ public class TreeTaggerModelTest
 		
 		assertEquals(TreeTaggerModel.VERSION_3_2, model.getVersion());
 		assertEquals(59, model.getTags().size());
-		assertEquals(243335, model.getDictionary().size());
+		assertEquals(243334, model.getDictionary().size());
 	}
 	
 	@Test
@@ -70,7 +70,7 @@ public class TreeTaggerModelTest
 		dumpModel(model);
 		
 		assertEquals(TreeTaggerModel.VERSION_3_1, model.getVersion());
-		assertEquals(174, model.getTags().size());
+		assertEquals(172, model.getTags().size());
 		assertEquals(3, model.getDictionary().size());
 	}
 	
