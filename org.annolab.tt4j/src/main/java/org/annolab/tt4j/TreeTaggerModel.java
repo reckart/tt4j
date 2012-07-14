@@ -24,10 +24,22 @@ public class TreeTaggerModel
 	public static final int VERSION_3_1 = 0x1F;
 	public static final int VERSION_3_2 = 0x20;
 	
+	private String source;
 	private ByteOrder byteOrder;
 	private int version;
 	private List<String> tags;
-	private List<String> dictionary;
+	private List<String> lemmas;
+	private List<String> tokens;
+
+	public String getSource()
+	{
+		return source;
+	}
+
+	public void setSource(String aSource)
+	{
+		source = aSource;
+	}
 
 	public ByteOrder getByteOrder()
 	{
@@ -59,13 +71,23 @@ public class TreeTaggerModel
 		tags = aTags;
 	}
 
-	public List<String> getDictionary()
+	public List<String> getLemmas()
 	{
-		return dictionary;
+		return lemmas;
 	}
 
-	public void setDictionary(List<String> aDictionary)
+	public void setLemmas(List<String> aLemmas)
 	{
-		dictionary = aDictionary;
+		lemmas = aLemmas;
+	}
+
+	public List<String> getTokens()
+	{
+		return tokens;
+	}
+
+	public void setTokens(List<String> aTokens)
+	{
+		tokens = aTokens;
 	}
 }
