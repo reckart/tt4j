@@ -88,7 +88,9 @@ public class TreeTaggerModelUtil
 			if (aFile.getName().toLowerCase().endsWith(".gz")) {
 				is = new GZIPInputStream(is);
 			}
-			return readModel(is, aCharsetName);
+			TreeTaggerModel model = readModel(is, aCharsetName);
+			model.setSource(aFile.toString());
+			return model;
 		}
 		finally {
 			Util.close(is);
@@ -115,7 +117,9 @@ public class TreeTaggerModelUtil
 			if (aUrl.getFile().toLowerCase().endsWith(".gz")) {
 				is = new GZIPInputStream(is);
 			}
-			return readModel(is, aCharsetName);
+			TreeTaggerModel model = readModel(is, aCharsetName);
+			model.setSource(aUrl.toString());
+			return model;
 		}
 		finally {
 			Util.close(is);

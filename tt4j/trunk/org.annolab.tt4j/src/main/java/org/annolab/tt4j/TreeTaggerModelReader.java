@@ -80,12 +80,53 @@ public class TreeTaggerModelReader
 			// Read tags
 			model.setTags(readStrings(numberOfTags));
 			
-			// Read dictionary size
 			if (readDictionary) {
-				int dictionarySize = in.readInt();
-				model.setDictionary(readStrings(dictionarySize));
-			}		
-			
+				// Read lemma dictionary size
+				int lemmaSize = in.readInt();
+				model.setLemmas(readStrings(lemmaSize));
+
+				// Read token dictionary size
+				int tokenSize = in.readInt();
+				
+				assert 0xFFFFFFFE == in.readInt(); // Assert marker
+				assert 0x00 == in.readByte(); // Assert end of block
+	
+				// Read unknown block
+				int c1 = in.readInt(); // Read block size
+				for (int c1i = 0; c1i < c1; c1i ++) {
+					in.readInt(); // Unknown
+					in.readInt(); // Unknown
+					in.readInt(); // Unknown
+				}
+				in.readInt(); // Unknown
+				assert 0x00 == in.readByte(); // Assert end of block
+	
+				// Read unknown block
+				int c2 = in.readInt(); // Read block size
+				in.readInt(); // Unknown
+				for (int band = 0; band < 3; band ++) {
+					for (int c2i = 0; c2i < c2; c2i ++) {
+						in.readInt(); // Unknown
+					}
+				}
+	
+				List<String> tokens = new ArrayList<String>();
+				for (int ct = 0; ct < tokenSize; ct ++) {
+					String token = readZeroTerminatedString(charsetName);
+					tokens.add(token);
+					
+					// Read token data
+					int bsize = in.readInt(); // Block size size
+					in.readInt(); // Unknown
+					for (int cb = 0; cb < bsize; cb++) {
+						in.readInt(); // Unknown
+						in.readInt(); // Unknown
+						in.readInt(); // Unknown
+					}
+				}
+				model.setTokens(tokens);
+			}
+
 			return model;
 		}
 		finally {
