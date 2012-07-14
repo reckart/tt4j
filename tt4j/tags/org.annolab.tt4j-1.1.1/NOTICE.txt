@@ -1,0 +1,5 @@
+LittleEndianDataInputStream.java:
+
+	This class is public domain by Peter Franza, 2008.
+	See: http://www.peterfranza.com/2008/09/26/little-endian-input-stream/
+	
