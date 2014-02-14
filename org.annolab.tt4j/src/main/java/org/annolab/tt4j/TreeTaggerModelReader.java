@@ -88,8 +88,10 @@ public class TreeTaggerModelReader
 				// Read token dictionary size
 				int tokenSize = in.readInt();
 				
-				assert 0xFFFFFFFE == in.readInt(); // Assert marker
-				assert 0x00 == in.readByte(); // Assert end of block
+				int marker1 = in.readInt();
+				assert 0xFFFFFFFE == marker1; // Assert marker
+                byte marker2 = in.readByte();
+				assert 0x00 == marker2; // Assert end of block
 	
 				// Read unknown block
 				int c1 = in.readInt(); // Read block size
@@ -99,7 +101,8 @@ public class TreeTaggerModelReader
 					in.readInt(); // Unknown
 				}
 				in.readInt(); // Unknown
-				assert 0x00 == in.readByte(); // Assert end of block
+				byte marker3 = in.readByte();
+				assert 0x00 == marker3; // Assert end of block
 	
 				// Read unknown block
 				int c2 = in.readInt(); // Read block size
