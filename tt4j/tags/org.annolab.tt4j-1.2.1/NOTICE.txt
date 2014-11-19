@@ -1,0 +1,7 @@
+TreeTagger for Java
+Copyright (c) 2009-2014 Richard Eckart de Castilho.
+
+LittleEndianDataInputStream.java:
+
+	This class is public domain by Peter Franza, 2008.
+	See: http://www.peterfranza.com/2008/09/26/little-endian-input-stream/
