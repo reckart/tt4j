@@ -47,7 +47,7 @@ public class TreeTaggerModelReader
 	 * 
 	 * @param aIn an input stream.
 	 * @return the decoded model.
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs.
 	 */
 	public TreeTaggerModel read(InputStream aIn) throws IOException
 	{
@@ -214,6 +214,8 @@ public class TreeTaggerModelReader
 	 * Get the encoding used for reading the dictionary. This information need to be provided
 	 * externally, it is not present in the TreeTagger model file. Per default, the UTF-8
 	 * character set is used. 
+	 * 
+	 * @return the encoding.
 	 */
 	public String getEncoding()
 	{
@@ -222,6 +224,8 @@ public class TreeTaggerModelReader
 
 	/**
 	 * Set the encoding used by the dictionary.
+	 * 
+	 * @param aCharsetName the encoding.
 	 */
 	public void setEncoding(String aCharsetName)
 	{
@@ -230,6 +234,8 @@ public class TreeTaggerModelReader
 
 	/**
 	 * Check if the dictionary is read or skipped. Per default the dictionary is read. 
+	 * 
+	 * @return if the dictionary is read.
 	 */
 	public boolean isReadDictionary()
 	{
@@ -238,6 +244,8 @@ public class TreeTaggerModelReader
 
 	/**
 	 * Set if the dictionary is read or skipped.
+	 * 
+	 * @param aReadDictionary if the dictionary is read.
 	 */
 	public void setReadDictionary(boolean aReadDictionary)
 	{
