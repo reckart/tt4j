@@ -483,6 +483,28 @@ class TreeTaggerWrapper<O>
 		}
 	}
 
+    /**
+     * Load the given model. This method always reloads the model. It does not check if the
+     * currently loaded model is the same as the new model! 
+     *
+     * @param model the model.
+     * @throws IOException if the model can not be found.
+     */
+    public
+    void setModel(
+            final Model model)
+    throws IOException
+    {
+        stopTaggerProcess();
+
+        // If the previous model was temporary, we have to clean it up
+        if (_model != null) {
+            _model.destroy();
+        }
+
+        _model = model;
+    }
+
 	/**
 	 * Get the currently set model.
 	 *
@@ -502,7 +524,7 @@ class TreeTaggerWrapper<O>
 	{
 		// Clear the model resources
 		try {
-			setModel(null);
+			setModel((String) null);
 		}
 		catch (final IOException e) {
 			// Ignore
@@ -1110,7 +1132,7 @@ class TreeTaggerWrapper<O>
     			}
 
     			send(ENDOFTEXT);
-				send("\n.\n"+_model.getFlushSequence()+".\n.\n.\n.\n");
+				send(_model.getFlushSequence());
     		}
     		catch (final Throwable e) {
     			_exception = e;
@@ -1122,7 +1144,7 @@ class TreeTaggerWrapper<O>
     			final String line)
     	{
     		_pw.println(line);
-//    		System.out.println("--> "+line);
+    		// System.out.println("--> "+line);
     		_pw.flush();
     	}
 
