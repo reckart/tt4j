@@ -25,10 +25,12 @@ public
 class DefaultModel
 implements Model
 {
+    public static final String DEFAULT_FLUSH_SEQUENCE = "\n.\n.\n.\n.\n.\n(\n)\n.\n.\n.\n.\n";
+    
 	private String _encoding;
 	private File _file;
 	// Issue 6 - We need the "()" to flush properly when using the chinese model
-	private String _flushSequence = ".\n.\n.\n.\n(\n)\n";
+	private String _flushSequence;
 	private String _name;
 
 	public
@@ -37,10 +39,21 @@ implements Model
 			final File aFile,
 			final String aEncoding)
 	{
-		_name = aName;
-		_file = aFile;
-		_encoding = aEncoding;
+	    this(aName, aFile, aEncoding, DEFAULT_FLUSH_SEQUENCE);
 	}
+
+	   public
+	    DefaultModel(
+	            final String aName,
+	            final File aFile,
+	            final String aEncoding,
+	            final String aFlushSequence)
+	    {
+	        _name = aName;
+	        _file = aFile;
+	        _encoding = aEncoding;
+	        _flushSequence = aFlushSequence;
+	    }
 
 	public
 	void destroy()
