@@ -187,14 +187,14 @@ public class TreeTaggerModelTest
 	public void testReadTaggerModelLittleEndianIt() throws Exception
 	{
 		TreeTaggerModel model = TreeTaggerModelUtil.readModel(
-				new URL("http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/data/italian-par2-linux-3.1.bin.gz"), 
-				"ISO-8859-1");
+				new URL("http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/data/italian-par-linux-3.2-utf8.bin.gz"), 
+				"UTF-8");
 
 		dumpModel(model);
 		
-		assertEquals(TreeTaggerModel.VERSION_3_1, model.getVersion());
-		assertEquals(52, model.getTags().size());
-		assertEquals(35263, model.getLemmas().size());
+		assertEquals(TreeTaggerModel.VERSION_3_2, model.getVersion());
+		assertEquals(39, model.getTags().size());
+		assertEquals(58511, model.getLemmas().size());
 	}
 
 	@Ignore("Test not strictly necessary")
