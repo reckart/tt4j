@@ -35,6 +35,7 @@ public class TreeTaggerModelUtil
 	 * @param aModelFile the model file.
 	 * @param aCharsetName the model encoding (optional).
 	 * @return the tag set.
+	 * @throws IOException if an I/O error occurs.
 	 */
 	public static 
 	List<String> getTagset(
@@ -54,9 +55,10 @@ public class TreeTaggerModelUtil
 	/**
 	 * Read the tagset from a model.
 	 * 
-	 * @param aModelFile the model file.
+	 * @param aInputStream the model file.
 	 * @param aCharsetName the model encoding (optional).
 	 * @return the tag set.
+	 * @throws IOException if an I/O error occurs.
 	 */
 	public static 
 	List<String> getTagset(
@@ -79,10 +81,11 @@ public class TreeTaggerModelUtil
 	/**
 	 * Read a model from a file.
 	 * 
-	 * @param aUrl the file to load the model from. Supports gzipped models when the file name ends
+	 * @param aFile the file to load the model from. Supports gzipped models when the file name ends
 	 *        in ".gz".
 	 * @param aCharsetName the model encoding (optional).
 	 * @return the model.
+	 * @throws IOException if an I/O error occurs.
 	 */
 	public static
 	TreeTaggerModel readModel(
@@ -112,6 +115,7 @@ public class TreeTaggerModelUtil
 	 *        ".gz".
 	 * @param aCharsetName the model encoding (optional).
 	 * @return the model.
+	 * @throws IOException if an I/O error occurs.
 	 */
 	public static
 	TreeTaggerModel readModel(
@@ -141,6 +145,7 @@ public class TreeTaggerModelUtil
 	 *        reading.
 	 * @param aCharsetName the model encoding (optional).
 	 * @return the model.
+	 * @throws IOException if an I/O error occurs.
 	 */
 	public static 
 	TreeTaggerModel readModel(

@@ -56,11 +56,11 @@ class Util
 	 * argument, executables and models can be searched for in different
 	 * locations, e.g. executables in {@literal executable} and models in
 	 * {@literal models}.
-	 * <br/>
-	 * The returned list contains the additional search paths, the value of the
+	 * 
+	 * <p>The returned list contains the additional search paths, the value of the
 	 * system property {@literal treetagger.home} and the
 	 * environment variables {@literal TREETAGGER_HOME} and {@literal TAGDIR}
-	 * in this order.
+	 * in this order.</p>
 	 *
 	 * @param aAdditionalPaths additional paths to search in.
 	 * @param aSubPath search in the given sub-directory of the search paths.
@@ -197,6 +197,11 @@ class Util
     
     /**
      * For tests only.
+     * 
+     * @param aFile the file.
+     * @param aEncoding the encoding.
+     * @return the file content.
+     * @throws IOException if an I/O error occurs.
      */
     protected static
     String readFile(
@@ -223,6 +228,11 @@ class Util
 
     /**
      * For tests only.
+     * 
+     * @param aText the text to write.
+     * @param aFile the file to write to.
+     * @param aEncoding the encoding to use.
+     * @throws IOException if an I/O error occurs.
      */
     protected static
     void writeFile(
@@ -244,6 +254,10 @@ class Util
 
     /**
      * For tests only.
+     * 
+     * @param aText the text to write.
+     * @param aLocale the locale to use for tokenization.
+     * @return the tokens.
      */
     protected static
     String[] tokenize(

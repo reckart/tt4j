@@ -74,10 +74,10 @@ import java.util.regex.Pattern;
  * <p>
  * A simple illustration of how to use this class:
  * <pre>
- * TreeTaggerWrapper tt = new TreeTaggerWrapper<String>();
+ * TreeTaggerWrapper tt = new TreeTaggerWrapper&lt;String&gt;();
  * try {
  *     tt.setModel("/treetagger/models/english.par:iso8859-1");
- *     tt.setHandler(new TokenHandler<String>() {
+ *     tt.setHandler(new TokenHandler&lt;String&gt;() {
  *         void token(String token, String pos, String lemma) {
  *             System.out.println(token+"\t"+pos+"\t"+lemma);
  *         }
@@ -286,7 +286,7 @@ class TreeTaggerWrapper<O>
      * Setting this to {@code null} or to a negative value disables the output of probabilities.
      * Per default this is disabled.
      * 
-     * @param aProbabilityThreshold threshold X.
+     * @param aThreshold threshold X.
      */
     public 
     void setProbabilityThreshold(
@@ -341,7 +341,7 @@ class TreeTaggerWrapper<O>
 	/**
 	 * Get the current model resolver.
 	 *
-	 * @param aModelProvider a model resolver.
+	 * @return the model resolver.
 	 */
 	public ModelResolver getModelResolver()
 	{
@@ -548,7 +548,7 @@ class TreeTaggerWrapper<O>
 	/**
 	 * Process the given array of token objects.
 	 *
-	 * @param aTokens the token objects.
+	 * @param aTokenList the token objects.
 	 * @throws IOException if there is a problem providing the model or executable.
 	 * @throws TreeTaggerException if there is a problem communication with TreeTagger.
 	 */
@@ -563,7 +563,7 @@ class TreeTaggerWrapper<O>
 	/**
 	 * Process the given list of token objects.
 	 *
-	 * @param aTokens the token objects.
+	 * @param aTokenList the token objects.
 	 * @throws IOException if there is a problem providing the model or executable.
 	 * @throws TreeTaggerException if there is a problem communication with TreeTagger.
 	 */
@@ -672,6 +672,7 @@ class TreeTaggerWrapper<O>
 	 *
 	 * @param tokenList the original list of tokens.
 	 * @return the filtered list of tokens.
+	 * @throws UnsupportedEncodingException if the model specifies an unsupported encoding.
 	 */
 	protected
 	Collection<O> removeProblematicTokens(
