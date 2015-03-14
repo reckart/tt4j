@@ -30,10 +30,12 @@ public class Example {
 }
 ----
 
+////
 More documentation can be found [Usage in the wiki].<br/>
 Changes between versions are recorded in the [Changes change log].
+////
 
-The latest version of TT4J is now available via [http://repo1.maven.org/maven2/org/annolab/tt4j/ Maven Central]. If you use Maven as your build tool, then you can add it as a dependency in your pom.xml file:
+The latest version of TT4J is now available via link:http://repo1.maven.org/maven2/org/annolab/tt4j/[Maven Central]. If you use Maven as your build tool, then you can add it as a dependency in your pom.xml file:
 
 [source,xml]
 ----
