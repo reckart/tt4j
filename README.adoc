@@ -1,0 +1,49 @@
+TreeTagger for Java is a Java wrapper around the popular link:http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/[TreeTagger] package by Helmut Schmid. It was written with a focus on platform-independence and easy integration into applications. It is written in Java 5 and has been tested on OS X, Ubuntu Linux, and Windows.
+
+=== Code example
+
+[source,java]
+----
+package org.annolab.tt4j;
+
+import static java.util.Arrays.asList;
+
+public class Example {
+  public static void main(String[] args) throws Exception {
+    // Point TT4J to the TreeTagger installation directory. The executable is expected
+    // in the "bin" subdirectory - in this example at "/opt/treetagger/bin/tree-tagger"
+    System.setProperty("treetagger.home", "/opt/treetagger");
+    TreeTaggerWrapper tt = new TreeTaggerWrapper<String>();
+    try {
+      tt.setModel("/opt/treetagger/models/english.par:iso8859-1");
+      tt.setHandler(new TokenHandler<String>() {
+        public void token(String token, String pos, String lemma) {
+          System.out.println(token + "\t" + pos + "\t" + lemma);
+        }
+      });
+      tt.process(asList(new String[] { "This", "is", "a", "test", "." }));
+    }
+    finally {
+      tt.destroy();
+    }
+  }
+}
+----
+
+More documentation can be found [Usage in the wiki].<br/>
+Changes between versions are recorded in the [Changes change log].
+
+The latest version of TT4J is now available via [http://repo1.maven.org/maven2/org/annolab/tt4j/ Maven Central]. If you use Maven as your build tool, then you can add it as a dependency in your pom.xml file:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.annolab.tt4j</groupId>
+  <artifactId>org.annolab.tt4j</artifactId>
+  <version>1.2.1</version>
+</dependency>
+----
+
+=== License
+
+*The link:http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/[TreeTagger] package, which is wrapped by TT4J, may only be used according to the link:http://www.cis.uni-muenchen.de/~schmid/tool/TreeTagger/Tagger-Licence[TreeTagger license terms]*. TreeTagger for Java is provided under the Apache License version 2.0 without any warranty.
