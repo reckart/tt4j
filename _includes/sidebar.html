@@ -1,0 +1,35 @@
+<nav>
+  <a href="/">
+    {% if site.data.theme.social.gravatar %}
+    <img src="http://www.gravatar.com/avatar/{{ site.data.theme.social.gravatar }}?s=200" id="gravatar" alt="My photo"/>
+    {% else %}
+    <img src="/logo.png" id="logo" alt="Blog logo"/>
+    {% endif %}
+  </a>
+  <h2><a href="/">{{ site.data.theme.name }}</a></h2>
+  <div id="bio">
+    <p>
+      TreeTagger for Java
+    </p>
+  </div>
+  <div>
+    <div><a href="usage.html">Usage</a></div>
+    <div><a href="tokenizer.html">Tokenizer</a></div>
+    <div><a href="introspection.html">Model introspection</a></div>
+    <div><a href="changes.html">Change log</a></div>
+  </div>
+  <hr/>
+  <div>
+    <!--<div><a href="https://github.com/reckart/tt4j/zipball/master">Download</a></div>-->
+    <div><a href="https://github.com/reckart/tt4j">GitHub</a></div>
+    <div><a href="http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.annolab.tt4j%22%20AND%20a%3A%22org.annolab.tt4j%22">Maven Central</a></div>
+  </div>
+  <hr/>
+  <div>
+    <div><script type="text/javascript" src="http://www.openhub.net/p/484337/widgets/project_thin_badge.js"></script></div>
+    <div><script type="text/javascript" src="http://www.openhub.net/p/484337/widgets/project_users.js"></script></div>
+  </div>
+  <div id="social">
+    {% include social.html %}
+  </div>
+</nav>

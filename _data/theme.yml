@@ -1,0 +1,29 @@
+# Theme customization - please change from the defaults!
+
+# Color for top bar, links, etc
+highlight_color: '#3498db'
+
+# Profile links on the left sidebar, leave blank to ignore
+social:
+  github: reckart
+  #bitbucket: philipj
+  #hacker_news: reckart
+  #stackexchange: 348619
+  #stackoverflow: 348619
+  twitter: i_am_rec
+  #facebook: zuck
+  #tumblr: animalygifs
+  #linkedin: philipjagielski
+  #gplus: 110552447039675960964
+  #gravatar: 86e6ff8f75f9daef42d53b7f8002fd95
+
+# "Hi, I'm _______"
+name: TT4J
+# email: test@example.com
+tagline: "TreeTagger for Java"
+
+# Google Analytics key, leave blank to ignore
+google_analytics_key: UA-17651182-2
+
+# Toggle "Postings are my own" disclaimer in footer
+show_disclaimer: false
