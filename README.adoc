@@ -1,5 +1,10 @@
+= TreeTagger for Java
+
 TreeTagger for Java is a Java wrapper around the popular link:http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/[TreeTagger] package by Helmut Schmid. It was written with a focus on platform-independence and easy integration into applications. It is written in Java 5 and has been tested on OS X, Ubuntu Linux, and Windows.
 
+For more information, see link:http://reckart.github.io/tt4j/[TreeTagger for Java] project page.
+
+////
 === Code example
 
 [source,java]
@@ -49,3 +54,4 @@ The latest version of TT4J is now available via link:http://repo1.maven.org/mave
 === License
 
 *The link:http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/[TreeTagger] package, which is wrapped by TT4J, may only be used according to the link:http://www.cis.uni-muenchen.de/~schmid/tool/TreeTagger/Tagger-Licence[TreeTagger license terms]*. TreeTagger for Java is provided under the Apache License version 2.0 without any warranty.
+////
