@@ -2,7 +2,7 @@
 
 TreeTagger for Java is a Java wrapper around the popular link:http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/[TreeTagger] package by Helmut Schmid. It was written with a focus on platform-independence and easy integration into applications. It is written in Java 5 and has been tested on OS X, Ubuntu Linux, and Windows.
 
-For more information, see link:http://reckart.github.io/tt4j/[TreeTagger for Java] project page.
+*For more information, see link:http://reckart.github.io/tt4j/[TreeTagger for Java] project page.*
 
 ////
 === Code example
