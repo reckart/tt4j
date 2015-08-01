@@ -17,6 +17,15 @@
 
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/all.css">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.min.css">
+  
+  {% if site.development_mode %}
+  {% else %}
+  <script>
+    if (window.location.protocol) {
+    window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);  
+    }
+  </script> 
+  {% endif %}
 </head>
 <body>
   <div class="container">
