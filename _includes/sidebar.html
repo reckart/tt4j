@@ -1,12 +1,12 @@
 <nav>
-  <a href="{{ site.baseurl }}/">
+  <a href="{{ site.url }}/">
     {% if site.data.theme.social.gravatar %}
     <img src="http://www.gravatar.com/avatar/{{ site.data.theme.social.gravatar }}?s=200" id="gravatar" alt="My photo"/>
     {% else %}
-    <img src="{{ site.baseurl }}/logo.png" id="logo" alt="Logo"/>
+    <img src="{{ site.url }}/logo.png" id="logo" alt="Logo"/>
     {% endif %}
   </a>
-  <h2><a href="{{ site.baseurl }}/">{{ site.data.theme.name }}</a></h2>
+  <h2><a href="{{ site.url }}/">{{ site.data.theme.name }}</a></h2>
   <div id="bio">
     <p>
       TreeTagger for Java
@@ -27,8 +27,8 @@
   </div>
   <hr/>
   <div>
-    <div><script type="text/javascript" src="http://www.openhub.net/p/484337/widgets/project_thin_badge.js"></script></div>
-    <div><script type="text/javascript" src="http://www.openhub.net/p/484337/widgets/project_users.js"></script></div>
+    <div><script type="text/javascript" src="//www.openhub.net/p/484337/widgets/project_thin_badge.js"></script></div>
+    <div><script type="text/javascript" src="//www.openhub.net/p/484337/widgets/project_users.js"></script></div>
   </div>
   <div id="social">
     {% include social.html %}

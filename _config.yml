@@ -1,6 +1,6 @@
 # General Jekyll Config
 highlighter: pygments
-url: http://reckart.github.io
+url: //reckart.github.io/tt4j
 lsi: false
 exclude: [LICENSE, CNAME, README.md, .gitignore, Gemfile, Gemfile.lock]
-baseurl: /tt4j
+baseurl: 
