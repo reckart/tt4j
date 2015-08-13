@@ -154,6 +154,7 @@
 								<configuration>
 									<excludes>
 										<exclude>.gitignore</exclude>
+										<exclude>.travis.yml</exclude>
 										<!-- release generated artifact -->
 										<exclude>release.properties</exclude>
 										<exclude>NOTICE.txt</exclude>
