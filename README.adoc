@@ -14,7 +14,8 @@
 
 = TreeTagger for Java
 
-image:https://travis-ci.org/reckart/tt4j.svg["Build Status", link="https://travis-ci.org/reckart/tt4j"]
+image:https://travis-ci.org/reckart/tt4j.svg["Build Status", link="https://travis-ci.org/reckart/tt4j"] 
+image:https://maven-badges.herokuapp.com/maven-central/org.annolab.tt4j/org.annolab.tt4j/badge.svg["Maven Central", link="https://maven-badges.herokuapp.com/maven-central/org.annolab.tt4j/org.annolab.tt4j"]
 
 TreeTagger for Java is a Java wrapper around the popular link:http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/[TreeTagger] package by Helmut Schmid. It was written with a focus on platform-independence and easy integration into applications. It is written in Java 5 and has been tested on OS X, Ubuntu Linux, and Windows.
 
