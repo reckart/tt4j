@@ -966,7 +966,7 @@ class TreeTaggerWrapper<O>
 
 	    			outRecord = outRecord.trim();
 
-	    			if (STARTOFTEXT.equals(outRecord)) {
+	    			if (outRecord.contains(STARTOFTEXT)) {
 	    				inText = true;
 						if (TRACE) {
 							System.err.println("["+TreeTaggerWrapper.this+
@@ -975,7 +975,7 @@ class TreeTaggerWrapper<O>
 	    				continue;
 	    			}
 
-	    			if (ENDOFTEXT.equals(outRecord)) {
+	    			if (outRecord.contains(ENDOFTEXT)) {
 						if (TRACE) {
 							System.err.println("["+TreeTaggerWrapper.this+
 									"|TRACE] ("+_tokensRead+") COMPLETE ["+outRecord+"]");
