@@ -102,8 +102,6 @@ class TreeTaggerWrapper<O>
 
     // A tag to identify begin/end of a text in the data flow.
     // (avoid to restart TreeTagger process each time)
-    private static final String STARTOFTEXT = "<This-is-the-start-of-the-text />";
-    private static final String ENDOFTEXT = "<This-is-the-end-of-the-text />";
 
 	/**
 	 *  This is the maximal token size that TreeTagger on OS X supports (empirically determined).
@@ -935,10 +933,10 @@ class TreeTaggerWrapper<O>
 		private final InputStream ins;
 		private Throwable _exception;
 
-    	public
+		public
     	Reader(
-    			final InputStream aIn,
-    			final Iterator<O> aTokenIterator)
+				final InputStream aIn,
+				final Iterator<O> aTokenIterator)
     	throws UnsupportedEncodingException
 		{
     		ins = aIn;
@@ -953,7 +951,7 @@ class TreeTaggerWrapper<O>
     		try {
 	    		String outRecord;
 	    		boolean inText = false;
-	    		while (true) {
+	    		while (tokenIterator.hasNext()) {
 	    			outRecord = in.readLine();
 
 	    			if (outRecord == null) {
@@ -965,25 +963,6 @@ class TreeTaggerWrapper<O>
 	    			}
 
 	    			outRecord = outRecord.trim();
-
-	    			if (STARTOFTEXT.equals(outRecord)) {
-	    				inText = true;
-						if (TRACE) {
-							System.err.println("["+TreeTaggerWrapper.this+
-									"|TRACE] ("+_tokensRead+") START ["+outRecord+"]");
-						}
-	    				continue;
-	    			}
-
-	    			if (ENDOFTEXT.equals(outRecord)) {
-						if (TRACE) {
-							System.err.println("["+TreeTaggerWrapper.this+
-									"|TRACE] ("+_tokensRead+") COMPLETE ["+outRecord+"]");
-						}
-	    				break;
-	    			}
-
-	    			if (inText) {
 	    				// Get word and tag
 	    				String outToken = null;
 
@@ -1032,6 +1011,7 @@ class TreeTaggerWrapper<O>
 	                            	// process all the fields.
 	                            	break;
 	                            }
+
 		    				}
 		    				catch (Throwable e) {
 								throw new TreeTaggerException(
@@ -1039,8 +1019,8 @@ class TreeTaggerWrapper<O>
 												+ "] in [" + _lastOutRecord + "]", e);
 		    				}
 	    				}
+
 	    			}
-	    		}
     		}
     		catch (TreeTaggerException e) {
     			_exception = e;
@@ -1123,7 +1103,6 @@ class TreeTaggerWrapper<O>
     			_pw = new PrintWriter(new BufferedWriter(
     			    new OutputStreamWriter(os, _model.getEncoding())));
 
-    			send(STARTOFTEXT);
 
     			while (tokenIterator.hasNext()) {
     				O token = tokenIterator.next();
@@ -1132,7 +1111,6 @@ class TreeTaggerWrapper<O>
     				send(getText(token));
     			}
 
-    			send(ENDOFTEXT);
 				send(_model.getFlushSequence());
     		}
     		catch (final Throwable e) {
