@@ -126,7 +126,13 @@ class TreeTaggerWrapper<O>
 	private Double _epsilon = null;
 	private boolean _hyphenHeuristics = false;
 
-	private String[] _ttArgs = { "-quiet", "-no-unknown", "-sgml", "-token", "-lemma" };
+	public static final String ARG_QUIET = "-quiet";
+    public static final String ARG_NO_UNKNOWN = "-no-unknown";
+    public static final String ARG_SGML = "-sgml";
+    public static final String ARG_TOKEN = "-token";
+    public static final String ARG_LEMMA = "-lemma";
+	
+    private String[] _ttArgs = { ARG_QUIET, ARG_NO_UNKNOWN, ARG_SGML, ARG_TOKEN, ARG_LEMMA };
 
 	private int _numTokens = 0;
 	private int _tokensWritten = 0;
@@ -950,6 +956,8 @@ class TreeTaggerWrapper<O>
     	public
     	void run()
     	{
+    	    boolean sgmlMode = asList(_ttArgs).contains(ARG_SGML);
+    	    
     		try {
 	    		String outRecord;
 	    		boolean inText = false;
@@ -966,7 +974,7 @@ class TreeTaggerWrapper<O>
 
 	    			outRecord = outRecord.trim();
 
-	    			if (STARTOFTEXT.equals(outRecord)) {
+	    			if (sgmlMode ? STARTOFTEXT.equals(outRecord) : outRecord.startsWith(STARTOFTEXT+'\t')) {
 	    				inText = true;
 						if (TRACE) {
 							System.err.println("["+TreeTaggerWrapper.this+
@@ -975,7 +983,7 @@ class TreeTaggerWrapper<O>
 	    				continue;
 	    			}
 
-	    			if (ENDOFTEXT.equals(outRecord)) {
+	    			if (sgmlMode ? ENDOFTEXT.equals(outRecord) : outRecord.startsWith(ENDOFTEXT+'\t')) {
 						if (TRACE) {
 							System.err.println("["+TreeTaggerWrapper.this+
 									"|TRACE] ("+_tokensRead+") COMPLETE ["+outRecord+"]");
