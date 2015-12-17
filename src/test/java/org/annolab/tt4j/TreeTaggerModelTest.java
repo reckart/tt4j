@@ -45,8 +45,8 @@ public class TreeTaggerModelTest
 		dumpModel(model);
 		
 		assertEquals(TreeTaggerModel.VERSION_3_2, model.getVersion());
-		assertEquals(59, model.getTags().size());
-		assertEquals(243325, model.getLemmas().size());
+		assertEquals(58, model.getTags().size());
+		assertEquals(243322, model.getLemmas().size());
 	}
 	
 	@Test
