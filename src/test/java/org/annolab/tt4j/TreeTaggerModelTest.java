@@ -49,6 +49,20 @@ public class TreeTaggerModelTest
 		assertEquals(243322, model.getLemmas().size());
 	}
 	
+    @Test
+    public void testReadTaggerModelLittleEndianFi() throws Exception
+    {
+        TreeTaggerModel model = TreeTaggerModelUtil.readModel(
+                new URL("http://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/data/finnish-par-linux-3.2-utf8.bin.gz"), 
+                "UTF-8");
+        
+        dumpModel(model);
+        
+        assertEquals(TreeTaggerModel.VERSION_3_2, model.getVersion());
+        assertEquals(614, model.getTags().size());
+        assertEquals(291117, model.getLemmas().size());
+    }
+    
 	@Test
 	public void testReadChunkerModelLittleEndianEn() throws Exception
 	{

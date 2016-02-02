@@ -183,9 +183,8 @@ public class TreeTaggerModelReader
 		int bytesRead = 0;
 		byte[] buffer = new byte[128];
 		int b;
-		int i = 0;
 		while ((b = inStream.read()) != -1) {
-			// Finished
+			// Finished / zero terminated
 			if (b == 0) {
 				// Shrink buffer
 				byte[] buf = buffer;
@@ -195,16 +194,14 @@ public class TreeTaggerModelReader
 			}
 			
 			// Extend buffer
-			if (i == buffer.length) {
+			if (bytesRead == buffer.length) {
 				byte[] buf = buffer;
 				buffer = new byte[buf.length + 128];
 				System.arraycopy(buf, 0, buffer, 0, buf.length);
-				i = 0;
 			}
 			
-			buffer[i] = (byte) b;
+			buffer[bytesRead] = (byte) b;
 			bytesRead++;
-			i++;
 		}
 		
 		throw new IOException("Unexpected end of file.");
