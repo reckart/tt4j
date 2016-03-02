@@ -39,15 +39,21 @@ println "Writing dictionaries may take a while..."
 
 println "... writing tags ..."
 tags.delete()
-model.tags.each { tags << "${it}\n" } 
+tags.withPrintWriter("UTF-8", { out ->
+    model.tags.each { out.println "${it}" } 
+})
 
 println "... writing lemmas ..."
 lemmas.delete()
-model.lemmas.each { lemmas << "${it}\n" } 
+lemmas.withPrintWriter("UTF-8", { out ->
+    model.lemmas.each { out.println "${it}" } 
+})
 
 println "... writing tokens ..."
 tokens.delete()
-model.tokens.each { tokens << "${it}\n" } 
+tokens.withPrintWriter("UTF-8", { out ->
+    model.tokens.each { out.println "${it}" } 
+})
 
 println "... done."
 {% endhighlight %}
